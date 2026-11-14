@@ -280,10 +280,16 @@ P["always"]          = { label = "sempre", fn = function(env) return true end }
 P["has_enemy"]       = { label = "alvo atacável", fn = function(env) return env.hasActiveEnemy and true or false end }
 P["not_cat_form"]    = { label = "você NÃO está em forma de animal (Cat Form)", fn = function(env) return env.form == 0 and true or false end }
 P["bear_form"]       = { label = "você está em Bear Form", fn = function(env) return env.form == 2 and true or false end }
-P["mark_missing"]    = { label = "Mark of the Wild ausente (self-buff)",
-    fn = function(env) return (AddonTable.IsSelfMarkUp and AddonTable.IsSelfMarkUp() or false) == false end }
-P["thorns_missing"]  = { label = "Thorns ausente (self-buff)",
-    fn = function(env) return (AddonTable.IsSelfThornsUp and AddonTable.IsSelfThornsUp() or false) == false end }
+P["mark_missing"]    = { label = "humano/elfo ou Moonkin e Mark of the Wild ausente (self-buff)",
+    fn = function(env)
+        if env.form == 1 or env.form == 2 then return false end -- não pode em Cat/Bear
+        return (AddonTable.IsSelfMarkUp and AddonTable.IsSelfMarkUp() or false) == false
+    end }
+P["thorns_missing"]  = { label = "humano/elfo ou Moonkin e Thorns ausente (self-buff)",
+    fn = function(env)
+        if env.form == 1 or env.form == 2 then return false end -- não pode em Cat/Bear
+        return (AddonTable.IsSelfThornsUp and AddonTable.IsSelfThornsUp() or false) == false
+    end }
 
 -- Prefixo COMUM a todas as specs de Druid: self-buffs do Druid.
 AddonTable.DruidCommonNodes = {
