@@ -401,23 +401,30 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
     local state = { specKey = nil }
     for specKey in pairs(specs) do state.specKey = state.specKey or specKey end
 
-    -- botões de spec
+    -- botões de spec — quebra em várias linhas quando muitos specs (até 5 specs: 400px)
     local specButtons = {}
-    local sx = 0
+    local sx, sy = 0, 0
+    local BTN_W = 120
+    local GAP = 4
+    local MAX_W = 400
     for specKey, spec in pairs(specs) do
+        if sx + BTN_W > MAX_W then
+            sx = 0
+            sy = sy - 24 -- próxima linha de botões
+        end
         local btn = CreateFrame("Button", nil, section, "UIPanelButtonTemplate")
-        btn:SetSize(120, 20)
-        btn:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", sx, -8)
+        btn:SetSize(BTN_W, 20)
+        btn:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", sx, -8 + sy)
         btn:SetText(spec.title or specKey)
         btn.specKey = specKey
-        sx = sx + 124
         specButtons[specKey] = btn
+        sx = sx + (BTN_W + GAP)
     end
 
-    -- host dos cards
+    -- host dos cards — ancorado abaixo dos botões de spec (que pode ter quebrado em linhas)
     local cardsHost = CreateFrame("Frame", nil, section)
     cardsHost:SetSize(396, 10)
-    cardsHost:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -8 - 22)
+    cardsHost:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -8 - 22 + sy)
 
     local cards = {}
 
