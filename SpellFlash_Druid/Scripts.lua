@@ -87,6 +87,63 @@ local function IsBehind()
 end
 
 -- =====================================================
+-- SELF-BUFFS: crença por cast (aulas secretas em combate) — mesma receita dos
+-- aspectos/Lightning Shield (07-auras-secretas-e-crenca.md).
+--   Mark of the Wild: 1h no Forever
+--   Thorns: 10 min
+-- =====================================================
+local MARK_IDS    = { 1126, 5232, 6756, 5234, 8907, 9884, 9885 }
+local THORNS_IDS  = { 467,  782,  1075, 8914, 9756, 9910 }
+local SELF_BUFF_DURATIONS = {}
+for _, id in ipairs(MARK_IDS)   do SELF_BUFF_DURATIONS[id] = 3600 end
+for _, id in ipairs(THORNS_IDS) do SELF_BUFF_DURATIONS[id] = 600  end
+AddonTable.SelfBuffBelief = AddonTable.SelfBuffBelief or {}
+
+local Buff = SpellFlashAddon.CheckBuff
+local function IsAnySelfBuffUp(selfList)
+    for _, id in ipairs(selfList) do
+        local name = SpellName(id)
+        if name and Buff then
+            local ok, up = pcall(Buff, name, "player")
+            if ok and up then return true end
+        end
+    end
+    if type(InCombatLockdown) == "function" and InCombatLockdown() then
+        for _, id in ipairs(selfList) do
+            local expires = AddonTable.SelfBuffBelief and AddonTable.SelfBuffBelief[id]
+            if expires and type(GetTime) == "function" and GetTime() < expires then
+                return true
+            end
+        end
+    end
+    return false
+end
+AddonTable.IsSelfMarkUp   = function() return IsAnySelfBuffUp(MARK_IDS) end
+AddonTable.IsSelfThornsUp = function() return IsAnySelfBuffUp(THORNS_IDS) end
+
+local trackerFrame = CreateFrame("Frame")
+trackerFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+local function NormSpellName(s)
+    if type(s) ~= "string" then return nil end
+    return (s:gsub("%s*%b()%s*$", ""):gsub("%s*$", ""):lower())
+end
+local selfBuffNorm = {}
+for id in pairs(SELF_BUFF_DURATIONS) do
+    local n = NormSpellName(SpellName(id))
+    if n then selfBuffNorm[n] = id end
+end
+trackerFrame:SetScript("OnEvent", function(self, event, ...)
+    if event == "UNIT_SPELLCAST_SUCCEEDED" then
+        local nameNorm = NormSpellName(type(...) == "string" and select(1, ...) or nil)
+        local id = nameNorm and selfBuffNorm[nameNorm]
+        if id and type(GetTime) == "function" then
+            AddonTable.SelfBuffBelief = AddonTable.SelfBuffBelief or {}
+            AddonTable.SelfBuffBelief[id] = GetTime() + SELF_BUFF_DURATIONS[id]
+        end
+    end
+end)
+
+-- =====================================================
 -- ROTATION SPECS (declaradas como DADO; editor /sf → Druid)
 -- =====================================================
 if AddonTable.RotationPredicates then
@@ -99,47 +156,47 @@ AddonTable.RotationSpecs.CAT = {
     title = "Feral — Gato (DPS)",
     -- SEM nó de forma: o jogador escolhe a forma; a rotação de Gato roda só quando
     -- em Cat Form (o hub despacha CAT/BEAR conforme env.form).
-    nodes = {
+    nodes = AddonTable.ConcatCommonNodes(AddonTable.DruidCommonNodes, {
         { id = "pounce",   spellID = 9005, name = "Pounce",         color = "Yellow", condition = "pounce_condition" },
         { id = "rip",      spellID = 1079, name = "Rip",            color = "Yellow", condition = "combo5" },
         { id = "ferocious_bite", spellID = 22568, name = "Ferocious Bite", color = "Orange", condition = "combo5" },
         { id = "rake",     spellID = 1822, name = "Rake",           color = "Pink",   condition = "energy40" },
         { id = "shred",    spellID = 5221, name = "Shred",          color = "Yellow", condition = "behind" },
         { id = "claw",     spellID = 1082, name = "Claw",           color = "White",  condition = "always" },
-    },
+    }),
 }
 
 AddonTable.RotationSpecs.BEAR = {
     title = "Feral — Urso (tank)",
     -- SEM nó de forma: o jogador escolhe a forma; a rotação de Urso roda quando
     -- em Bear Form (o hub despacha BEAR conforme env.form == 2).
-    nodes = {
+    nodes = AddonTable.ConcatCommonNodes(AddonTable.DruidCommonNodes, {
         { id = "bash",     spellID = 5211, name = "Bash",           color = "Aqua",   condition = "target_casting" },
         { id = "frenzied_regeneration", spellID = 22842, name = "Frenzied Regeneration", color = "Green", condition = "my_hp35", passthrough = true },
         { id = "maul",     spellID = 6807, name = "Maul",           color = "Yellow", condition = "always" },
         { id = "swipe",    spellID = 779,  name = "Swipe (Bear)",   color = "Purple", condition = "aoe_and_enemy" },
         { id = "lacerate", spellID = 54802, name = "Lacerate",      color = "Pink",   condition = "has_enemy" },
         { id = "growl",    spellID = 6795, name = "Growl",          color = "Yellow", condition = "has_enemy" },
-    },
+    }),
 }
 
 AddonTable.RotationSpecs.BAL = {
     title = "Balance",
-    nodes = {
+    nodes = AddonTable.ConcatCommonNodes(AddonTable.DruidCommonNodes, {
         { id = "moonkin_form", spellID = 24858, name = "Moonkin Form", color = "Green", condition = "not_moonkin" },
         { id = "insect_swarm", spellID = 912,   name = "Insect Swarm", color = "Pink",  condition = "insect_swarm_missing" },
         { id = "moonfire",     spellID = 9835,  name = "Moonfire",     color = "Pink",  condition = "moonfire_missing" },
         { id = "starfire",     spellID = 8950,  name = "Starfire",     color = "Yellow", condition = "always" },
         { id = "wrath",        spellID = 5177,  name = "Wrath",        color = "Yellow", condition = "always" },
-    },
+    }),
 }
 
 AddonTable.RotationSpecs.REST = {
     title = "Restauração",
-    nodes = {
+    nodes = AddonTable.ConcatCommonNodes(AddonTable.DruidCommonNodes, {
         { id = "frenzied_regeneration", spellID = 22842, name = "Frenzied Regeneration", color = "Green", condition = "always" },
         { id = "cat_form",    spellID = 768,   name = "Cat Form",    color = "Green",  condition = "bear_form" },
-    },
+    }),
 }
 
 -- =====================================================

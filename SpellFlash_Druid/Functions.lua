@@ -227,11 +227,19 @@ end
 -- =====================================================
 -- UTILIDADE / MANTIMENTOS
 -- =====================================================
+AddonTable.Castable["Mark of the Wild"] = function()
+    local z = {}
+    z.SpellName = SpellName(1126)
+    z.Buff = z.SpellName
+    z.BuffUnit = "player"
+    return CheckCastable(z)
+end
 AddonTable.Castable["Thorns"] = function()
     local z = {}
+    z.SpellID = 467
     z.SpellName = SpellName(467)
     z.Buff = z.SpellName
-    z.Unit = "player"
+    z.BuffUnit = "player"
     return CheckCastable(z)
 end
 AddonTable.Castable["Barkskin"] = function()
@@ -272,6 +280,23 @@ P["always"]          = { label = "sempre", fn = function(env) return true end }
 P["has_enemy"]       = { label = "alvo atacável", fn = function(env) return env.hasActiveEnemy and true or false end }
 P["not_cat_form"]    = { label = "você NÃO está em forma de animal (Cat Form)", fn = function(env) return env.form == 0 and true or false end }
 P["bear_form"]       = { label = "você está em Bear Form", fn = function(env) return env.form == 2 and true or false end }
+P["mark_missing"]    = { label = "Mark of the Wild ausente (self-buff)",
+    fn = function(env) return (AddonTable.IsSelfMarkUp and AddonTable.IsSelfMarkUp() or false) == false end }
+P["thorns_missing"]  = { label = "Thorns ausente (self-buff)",
+    fn = function(env) return (AddonTable.IsSelfThornsUp and AddonTable.IsSelfThornsUp() or false) == false end }
+
+-- Prefixo COMUM a todas as specs de Druid: self-buffs do Druid.
+AddonTable.DruidCommonNodes = {
+    { id = "mark_of_the_wild", spellID = 1126, name = "Mark of the Wild", color = "White", condition = "mark_missing", passthrough = true },
+    { id = "thorns",           spellID = 467,  name = "Thorns",          color = "White", condition = "thorns_missing", passthrough = true },
+}
+
+function AddonTable.ConcatCommonNodes(common, nodes)
+    local out = {}
+    for _, n in ipairs(common or {}) do out[#out + 1] = n end
+    for _, n in ipairs(nodes or {}) do out[#out + 1] = n end
+    return out
+end
 P["not_moonkin"]     = { label = "você NÃO está em Moonkin Form", fn = function(env) return env.form ~= 3 and true or false end }
 P["target_casting"]  = { label = "alvo conjurando", fn = function(env) return env.targetCasting and true or false end }
 P["pounce_condition"] = { label = "Cat Form, 40+ de energia, PvE",

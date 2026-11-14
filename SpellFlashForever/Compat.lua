@@ -324,6 +324,12 @@ local FAMILIES = {
     { 14914 },                                                    -- Holy Fire (talento)
     { 402174 },                                                   -- Penance (talento; novo; VERIFICAR)
     { 14751 },                                                    -- Inner Focus (talento)
+    -- Druid (Forever 1.60.1): ranks conferidos no Questing.wiki/Wowhead Forever (2026-11-14)
+    { 1126, 5232, 6756, 5234, 8907, 9884, 9885 },               -- Mark of the Wild (7 ranks)
+    { 467, 782, 1075, 8914, 9756, 9910 },                       -- Thorns (6 ranks)
+    { 22812 },                                                   -- Barkskin (única)
+    { 29166 },                                                   -- Innervate (única)
+    { 18562 },                                                   -- Swiftmend (única)
 }
 
 local familyOf = {}
