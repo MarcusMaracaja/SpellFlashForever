@@ -283,13 +283,19 @@ end
 
 -- Conteúdo da Aba Sobre
 local function BuildAboutTab(parent)
+    -- Logo circular no topo (128x128, máscara circular)
+    local logo = parent:CreateTexture(nil, "ARTWORK")
+    logo:SetSize(96, 96)
+    logo:SetPoint("TOPLEFT", 16, -12)
+    logo:SetTexture("Interface\\AddOns\\SpellFlashForever\\Textures\\SpellFlashForever_Icon.tga")
+
     local title = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", 16, -16)
+    title:SetPoint("TOPLEFT", logo, "TOPRIGHT", 12, -18)
     title:SetText("|cff33ff99SpellFlash Forever|r")
 
     local version = parent:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     version:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
-    version:SetText("Versão 1.3.0-forever · WoW Forever (Interface 16001)")
+    version:SetText("Versão 1.5.0-forever · WoW Forever (Interface 16001)")
 
     local function AddSection(anchorTo, yOffset, header, body)
         local h = parent:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -305,7 +311,7 @@ local function BuildAboutTab(parent)
         return b
     end
 
-    local s1 = AddSection(version, -12, "O que é",
+    local s1 = AddSection(logo, -4, "O que é",
         "O SpellFlash Forever é um assistente de rotação para o WoW Forever. A cada 0,2s ele avalia seu alvo, sua spec, seus talentos, sua mana, seu alcance e o estado do combate — e faz piscar na barra de ação a habilidade que você deveria usar agora.\n\nCada habilidade pisca com a cor da sua função: dano principal (amarelo), AoE (roxo), interrupção/controle (ciano), defensivo (vermelho), utilidade (verde) e situacional (rosa/laranja).")
 
     local s2 = AddSection(s1, -14, "O que inclui",

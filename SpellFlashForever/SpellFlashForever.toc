@@ -2,7 +2,7 @@
 ## Title: SpellFlash Forever
 ## Notes: SpellFlash para o WoW Forever. Flasha botoes de acao com sugestoes de feiticos/habilidades por classe e spec. Adaptado do SpellFlash (WotLK).
 ## Author: Marcus (SpellFlash original: Exalter, BigRedBrent, SF Community)
-## Version: 1.4.0
+## Version: 1.5.0
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## SavedVariables: SpellFlashForeverDB
 ## SavedVariablesPerCharacter: SpellFlashForeverCharDB

@@ -1,5 +1,9 @@
 # SpellFlash Forever
 
+<p align="center">
+  <img src="assets/LogoSpellFlash.jpg" alt="SpellFlash Forever" width="360">
+</p>
+
 Assistente de rotação para o **WoW Forever** (Interface `16001`, pt-BR, conteúdo
 vanilla em engine moderna). A cada 0,2 s o addon avalia sua spec, seus talentos, seu
 alvo, sua mana, seu alcance e o estado do combate — e faz **piscar na barra de ação a
@@ -10,11 +14,12 @@ defensivo, utilidade).
 
 | Pasta | Classe | Destaque |
 |---|---|---|
-| `SpellFlashForever/` | Core (SpellFlashForever) | Driver de sugestões, crenças de auras em combate, editor visual de rotação por personagem (`/sf`), botão de tecla, botão de minimapa |
+| `SpellFlashForever/` | Core (SpellFlashForever) | Driver de sugestões, crenças de auras em combate, editor visual de rotação por personagem (`/sf`), botão de tecla, botão de minimapa com a logo |
 | `SpellFlash_Hunter/` | Hunter | BM / MM / SV (Survival) |
 | `SpellFlash_Shaman/` | Shaman | Elemental (foco) e Enhancement |
 | `SpellFlash_Warrior/` | Warrior | Arms / Fury / Protection |
 | `SpellFlash_Druid/` | Druid | Cat / Bear / Balance (best-effort) |
+| `SpellFlash_Paladin/` | Paladin | Protection (tank) e Retribution (DPS) — **novo em 1.5/v1.4.1** |
 
 ## Requisitos
 

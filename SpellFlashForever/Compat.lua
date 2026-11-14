@@ -300,6 +300,17 @@ local FAMILIES = {
     { 17364 },                                                   -- Stormstrike (talento Enhancement; 150% normalizado, 6s CD pós-tuning 2026-11-03)
     { 16166 },                                                   -- Talento Ele 16166 ("Lightning Mastery"; antes "Elemental Mastery"; -0.5s LB, CL sem CD, 15s)
     { 425336 },                                                  -- Talento Enh 425336 (Rage of the Farseer; +30% vel. ataque 25s)
+    -- Paladin (Forever 1.60.1): IDs vanilla/verification cross-check Spy\List.lua 2026-11-14
+    { 20271 },                                                   -- Judgement (único rank)
+    { 20116, 20922, 20924 },                                     -- Consecration (ranks 20/40/60)
+    { 680 },                                                     -- Holy Strike (novo Forever; VERIFICAR EM JOGO)
+    { 24275 },                                                   -- Hammer of Wrath (único)
+    { 10308 },                                                   -- Exorcism (único)
+    { 20915 },                                                   -- Seal of Command (único)
+    { 20289 },                                                   -- Seal of Righteousness (único)
+    { 25780 },                                                   -- Righteous Fury (único)
+    { 28153 },                                                   -- Holy Shield (VERIFICAR EM JOGO)
+    { 853 },                                                      -- Hammer of Justice (único)
 }
 
 local familyOf = {}

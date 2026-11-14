@@ -74,11 +74,8 @@ local function Build()
 
     local icon = b:CreateTexture(nil, "ARTWORK")
     icon:SetSize(19, 19)
-    icon:SetTexture("Interface\\Icons\\Ability_Hunter_SteadyShot")
-    if not icon:GetTexture() then
-        icon:SetTexture("Interface\\Icons\\Ability_Marksmanship")
-    end
-    icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+    icon:SetTexture("Interface\\AddOns\\SpellFlashForever\\Textures\\SpellFlashForever_Icon.tga")
+    icon:SetTexCoord(0, 1, 0, 1)
     icon:SetPoint("TOPLEFT", 6, -6)
 
     frame = b
