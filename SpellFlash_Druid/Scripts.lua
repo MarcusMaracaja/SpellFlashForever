@@ -96,9 +96,10 @@ end
 AddonTable.RotationSpecs = AddonTable.RotationSpecs or {}
 
 AddonTable.RotationSpecs.CAT = {
-    title = "Feral — Gato",
+    title = "Feral — Gato (DPS)",
+    -- SEM nó de forma: o jogador escolhe a forma; a rotação de Gato roda só quando
+    -- em Cat Form (o hub despacha CAT/BEAR conforme env.form).
     nodes = {
-        { id = "cat_form", spellID = 768,  name = "Cat Form",       color = "Green",  condition = "not_cat_form" },
         { id = "pounce",   spellID = 9005, name = "Pounce",         color = "Yellow", condition = "pounce_condition" },
         { id = "rip",      spellID = 1079, name = "Rip",            color = "Yellow", condition = "combo5" },
         { id = "ferocious_bite", spellID = 22568, name = "Ferocious Bite", color = "Orange", condition = "combo5" },
@@ -109,13 +110,16 @@ AddonTable.RotationSpecs.CAT = {
 }
 
 AddonTable.RotationSpecs.BEAR = {
-    title = "Feral — Urso",
+    title = "Feral — Urso (tank)",
+    -- SEM nó de forma: o jogador escolhe a forma; a rotação de Urso roda quando
+    -- em Bear Form (o hub despacha BEAR conforme env.form == 2).
     nodes = {
         { id = "bash",     spellID = 5211, name = "Bash",           color = "Aqua",   condition = "target_casting" },
+        { id = "frenzied_regeneration", spellID = 22842, name = "Frenzied Regeneration", color = "Green", condition = "my_hp35", passthrough = true },
         { id = "maul",     spellID = 6807, name = "Maul",           color = "Yellow", condition = "always" },
-        { id = "growl",    spellID = 6795, name = "Growl",          color = "Yellow", condition = "always" },
-        { id = "swipe",    spellID = 779,  name = "Swipe (Bear)",   color = "Purple", condition = "always" },
-        { id = "frenzied_regeneration", spellID = 22842, name = "Frenzied Regeneration", color = "Green", condition = "my_hp35" },
+        { id = "swipe",    spellID = 779,  name = "Swipe (Bear)",   color = "Purple", condition = "aoe_and_enemy" },
+        { id = "lacerate", spellID = 54802, name = "Lacerate",      color = "Pink",   condition = "has_enemy" },
+        { id = "growl",    spellID = 6795, name = "Growl",          color = "Yellow", condition = "has_enemy" },
     },
 }
 
@@ -240,11 +244,15 @@ SpellFlashAddon.Spam[AddonName] = function(x)
 
     -- =====================================================
     -- ROTAÇÃO POR SPEC — via motor declarativo (editor /sf → Druid)
-    -- CAT e BEAR compartilham a spec FERAL; resolvido pelo form atual.
+    -- CAT e BEAR compartilham a spec FERAL; despacha conforme a forma ATUAL.
+    -- Em forma não-feral (caster/moonkin), NADA é sugerido — a forma é escolha
+    -- do jogador (decisão do usuário, H-0150).
     -- =====================================================
     local rotKey
     if isFeral then
-        rotKey = (env.form == 2) and "BEAR" or "CAT"
+        if env.form == 2 then rotKey = "BEAR"
+        elseif env.form == 1 then rotKey = "CAT"
+        else return end
     elseif isBal then
         rotKey = "BAL"
     else
