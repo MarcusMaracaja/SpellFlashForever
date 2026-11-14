@@ -69,9 +69,9 @@ local function GetAoECount()
 end
 
 -- Forma atual do Druida (1 Cat / 2 Bear / 3 Moonkin / 0 caster)
-local function IsMounted()
-    if type(IsMounted) == "function" and IsMounted() then return true end
-    if type(IsInMountedState) == "function" and IsInMountedState() then return true end
+local function IsPlayerMounted()
+    if type(_G.IsMounted) == "function" and _G.IsMounted() then return true end
+    if type(_G.IsInMountedState) == "function" and _G.IsInMountedState() then return true end
     return false
 end
 
@@ -247,7 +247,7 @@ SpellFlashAddon.Spam[AddonName] = function(x)
         isCCd = SpellFlashAddon.IsCrowedControlled and SpellFlashAddon.IsCrowedControlled("player") or false,
         form = GetDruidForm(),
         combo = GetComboPoints(),
-        mounted = IsMounted(),
+        mounted = IsPlayerMounted(),
     }
 
     -- =====================================================
