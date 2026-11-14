@@ -282,14 +282,24 @@ trackerFrame:SetScript("OnEvent", function(self, event, ...)
         UpdatePetState()
     elseif event == "UNIT_PET" then
         local unit = ...
-        if unit == "player" then
-            UpdatePetState()
+        -- O argumento pode vir "secret string" (taint do cliente Forever): nunca comparar
+        -- diretamente — UnitIsUnit() dentro de um pcall é seguro.
+        if type(unit) == "string" then
+            local ok, same = pcall(UnitIsUnit, unit, "player")
+            if ok and same then
+                UpdatePetState()
+            end
         end
     elseif event == "UNIT_DIED" then
         -- O pet morreu (mesmo que o corpo desapareça depois, continuamos sabendo)
         local unit = ...
-        if unit == "pet" then
-            AddonTable.PetIsDead = true
+        -- Linha 291 era `unit == "pet"` -> erro "attempt to compare local 'unit' (a secret
+        -- string value)". Blindar com pcall + UnitIsUnit como no UNIT_PET acima.
+        if type(unit) == "string" then
+            local ok, same = pcall(UnitIsUnit, unit, "pet")
+            if ok and same then
+                AddonTable.PetIsDead = true
+            end
         end
     elseif event == "UI_ERROR_MESSAGE" then
         -- Backup: "Your pet is dead" / "Seu ajudante está morto" ao tentar Call Pet
