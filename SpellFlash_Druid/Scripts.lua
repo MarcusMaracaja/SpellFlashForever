@@ -69,6 +69,12 @@ local function GetAoECount()
 end
 
 -- Forma atual do Druida (1 Cat / 2 Bear / 3 Moonkin / 0 caster)
+local function IsMounted()
+    if type(IsMounted) == "function" and IsMounted() then return true end
+    if type(IsInMountedState) == "function" and IsInMountedState() then return true end
+    return false
+end
+
 local function GetDruidForm()
     -- FORM (SpellFlashAddon.Form) não existe neste cliente (core SpellFlashForever).
     -- UnitPowerType é barato e disponível nos dois mundos:
@@ -212,6 +218,13 @@ AddonTable.RotationSpecs.REST = {
     }),
 }
 
+AddonTable.RotationSpecs.SELF = {
+    title = "Self-buffs",
+    -- Spec enxuta: só os self-buffs do prefixo comum (Mark of the Wild, Thorns).
+    -- Usada quando Feral está em forma humana/caster (sem rotação de forma ativa).
+    nodes = AddonTable.ConcatCommonNodes(AddonTable.DruidCommonNodes, {}),
+}
+
 -- =====================================================
 -- ROTAÇÃO MESTRE
 -- =====================================================
@@ -234,6 +247,7 @@ SpellFlashAddon.Spam[AddonName] = function(x)
         isCCd = SpellFlashAddon.IsCrowedControlled and SpellFlashAddon.IsCrowedControlled("player") or false,
         form = GetDruidForm(),
         combo = GetComboPoints(),
+        mounted = IsMounted(),
     }
 
     -- =====================================================
@@ -293,7 +307,7 @@ SpellFlashAddon.Spam[AddonName] = function(x)
         if isFeral then
             if env.form == 2 then rotKey = "BEAR"
             elseif env.form == 1 then rotKey = "CAT"
-            else return end
+            else rotKey = "SELF" end
         elseif isBal then
             rotKey = "BAL"
         else
@@ -332,14 +346,14 @@ SpellFlashAddon.Spam[AddonName] = function(x)
     -- =====================================================
     -- ROTAÇÃO POR SPEC — via motor declarativo (editor /sf → Druid)
     -- CAT e BEAR compartilham a spec FERAL; despacha conforme a forma ATUAL.
-    -- Em forma não-feral (caster/moonkin), NADA é sugerido — a forma é escolha
-    -- do jogador (decisão do usuário, H-0150).
+    -- Em forma não-feral (caster/moonkin), despacha SELF (só os self-buffs —
+    -- Mark of the Wild / Thorns — já está documentado no comentário do SELF).
     -- =====================================================
     local rotKey
     if isFeral then
         if env.form == 2 then rotKey = "BEAR"
         elseif env.form == 1 then rotKey = "CAT"
-        else return end
+        else rotKey = "SELF" end
     elseif isBal then
         rotKey = "BAL"
     else
