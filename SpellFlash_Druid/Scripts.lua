@@ -274,7 +274,24 @@ SpellFlashAddon.Spam[AddonName] = function(x)
         AddonTable.SpecMessageSent = true
     end
 
-    if not env.hasActiveEnemy then return end
+    if not env.hasActiveEnemy then
+        -- Sem alvo: a rotação declarativa ainda roda (os self-buffs do prefixo comum
+        -- não exigem inimigo). Só os nós com condição has_enemy/etc ficam de fora.
+        if isFeral then
+            if env.form == 2 then rotKey = "BEAR"
+            elseif env.form == 1 then rotKey = "CAT"
+            else return end
+        elseif isBal then
+            rotKey = "BAL"
+        else
+            rotKey = "REST"
+        end
+        local SF = _G["SpellFlashForever"]
+        if SF and type(SF.RunDeclaredRotation) == "function" then
+            SF.RunDeclaredRotation(AddonTable, rotKey, env)
+        end
+        return
+    end
 
     -- =====================================================
     -- CC / PvP (racial + trinket via core)
