@@ -70,6 +70,19 @@ end
 
 -- Forma atual do Druida (1 Cat / 2 Bear / 3 Moonkin / 0 caster)
 local function GetDruidForm()
+    -- FORM (SpellFlashAddon.Form) não existe neste cliente (core SpellFlashForever).
+    -- UnitPowerType é barato e disponível nos dois mundos:
+    --   RAGE (1) -> Urso; ENERGIA (3) -> Gato; MANA (0) -> caster/Moonkin.
+    if type(UnitPowerType) == "function" then
+        local ok, pt = pcall(UnitPowerType, "player")
+        if ok and tonumber(pt) then
+            pt = tonumber(pt)
+            if pt == 1 then return 2 end
+            if pt == 3 then return 1 end
+            return 0
+        end
+    end
+    -- Fallback para a antiga API (caso algum dia exista neste cliente)
     if type(SpellFlashAddon.Form) == "function" then
         if SpellFlashAddon.Form(SpellName(768)) then return 1 end
         if SpellFlashAddon.Form(SpellName(5487)) then return 2 end
