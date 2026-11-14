@@ -3,7 +3,7 @@
 ## Title: SpellFlash Forever: Warrior
 ## Notes: Sugestões de habilidades para Warrior Arms, Fury e Protection. Portado para WoW Forever (Interface 16001).
 ## Author: Marcus (SpellFlash original: BigRedBrent)
-## Version: 3.3.0-forever
+## Version: 3.4.0-forever
 ## X-Category: Damage rotations
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## DefaultState: Enabled

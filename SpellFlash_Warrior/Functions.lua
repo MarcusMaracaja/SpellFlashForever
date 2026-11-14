@@ -369,6 +369,18 @@ P["not_in_combat_shout_missing"] = { label = "fora de combate e sem Battle Shout
         return not (SpellFlashAddon.CheckBuff and SpellFlashAddon.CheckBuff(6673, "player")) and true or false
     end }
 
+-- Postura certa (pós-Tactical Mastery baseline do Forever: trocar de postura é barato)
+P["not_berserker_combat"] = { label = "em combate e você NÃO está em Berserker Stance (3)",
+    fn = function(env) return env.inCombat and env.currentStance ~= 3 and true or false end }
+P["not_defensive_stance"] = { label = "você NÃO está em Defensive Stance (2)",
+    fn = function(env) return env.currentStance ~= 2 and true or false end }
+
+-- AoE com Rage suficiente para os commits caros (pooling)
+P["aoe_rage40_and_enemy"] = { label = "AoE, rage acima de 40 e alvo atacável",
+    fn = function(env) return env.isAoE and (env.rage or 0) >= 40 and env.hasActiveEnemy and true or false end }
+P["aoe_rage45_and_enemy"] = { label = "AoE, rage acima de 45 e alvo atacável",
+    fn = function(env) return env.isAoE and (env.rage or 0) >= 45 and env.hasActiveEnemy and true or false end }
+
 -- =====================================================
 -- Prefixo COMUM a todas as specs de Warrior (buffs / stances / interrupt)
 -- Antes hardcoded no hub (Scripts.lua); agora nós declarados —

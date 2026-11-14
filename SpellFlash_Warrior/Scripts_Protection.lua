@@ -1,7 +1,9 @@
 -- SpellFlash_Warrior / Scripts_Protection.lua
 -- Rotação Protection declarada como DADO (RotationSpecs + RotationPredicates).
 -- O editor /sf → Warrior edita esta declaração por personagem.
--- Prioridade: Shield Slam > Revenge > Sunder Armor > Shield Bash (cast) > Thunder Clap AoE > Shield Block > Challenging Shout (AoE) > Shield Wall/Last Stand <35% > Retaliation > Attack.
+-- Prioridade (Forever p1.60.1): Defensive Stance (80% ameaça; antes da spec) >
+-- Shield Slam > Revenge > Sunder Armor > Shield Bash (cast) > Thunder Clap AoE > Shield
+-- Block > Challenging Shout (AoE) > Shield Wall/Last Stand <35% > Retaliation > Attack.
 -- (Pummel em Defensive Stance fica no hub Scripts.lua, acima da spec; o hub
 -- dispara Pummel fora de Defensive também — comportamento herdado, inalterado.)
 local AddonName, AddonTable = ...
@@ -11,6 +13,7 @@ AddonTable.RotationSpecs = AddonTable.RotationSpecs or {}
 AddonTable.RotationSpecs.PROT = {
     title = "Protection",
     nodes = AddonTable.ConcatCommonNodes(AddonTable.WarriorCommonNodes, {
+        { id = "defensive_stance",  spellID = 71,    name = "Defensive Stance", color = "Green", condition = "not_defensive_stance" },
         { id = "shield_slam",     spellID = 23922, name = "Shield Slam",    color = "Yellow", condition = "has_shield" },
         { id = "revenge",         spellID = 6572,  name = "Revenge",        color = "Yellow", condition = "has_enemy" },
         { id = "sunder_armor",    spellID = 7386,  name = "Sunder Armor",   color = "Pink",   condition = "has_enemy" },
