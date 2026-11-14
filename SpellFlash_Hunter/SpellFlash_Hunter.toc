@@ -1,0 +1,15 @@
+## Interface: 16001
+## Title: SpellFlash Forever: Hunter
+## Notes: Modulo Hunter para o SpellFlash Forever (WoW Forever). Adaptado do SpellFlash (WotLK).
+## Author: Marcus (SpellFlash original: SF Community)
+## Version: 1.4.0
+## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
+## Dependencies: SpellFlashForever
+
+Localization.lua
+Options.lua
+Functions.lua
+Scripts_BM.lua
+Scripts_MM.lua
+Scripts_SV.lua
+Scripts.lua

@@ -1,0 +1,15 @@
+# Backups locais
+_backup_*/
+*.bak*
+*.orig
+
+# Sistema
+Thumbs.db
+.DS_Store
+
+# SavedVariables (nunca versionar — ficam no WTF/)
+SavedVariables/
+*.lua.bak
+
+# IDE
+.idea/

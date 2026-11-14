@@ -1,0 +1,13 @@
+## Interface: 16001
+## Title: SpellFlash Forever: Druid
+## Notes: Sugestões de magias/habilidades para Druid (Feral Cat PvE, Balance). Adaptado do WotLK para WoW Forever (Interface 16001).
+## Author: Marcus (SpellFlash original: Exalter)
+## Version: 6.3.0-forever
+## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
+## DefaultState: Enabled
+## Dependencies: SpellFlashForever
+
+Localization.lua
+Options.lua
+Functions.lua
+Scripts.lua
