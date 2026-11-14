@@ -234,6 +234,14 @@ AddonTable.Castable["Mark of the Wild"] = function()
     z.BuffUnit = "player"
     return CheckCastable(z)
 end
+AddonTable.Castable["Nature's Grasp"] = function()
+    local z = {}
+    z.SpellID = 16689
+    z.SpellName = SpellName(16689)
+    z.Buff = z.SpellName
+    z.BuffUnit = "player"
+    return CheckCastable(z)
+end
 AddonTable.Castable["Thorns"] = function()
     local z = {}
     z.SpellID = 467
@@ -292,11 +300,17 @@ P["thorns_missing"]  = { label = "Thorns ausente (caster/Moonkin, não montado)"
         if env.mounted then return false end                     -- não sugere montado
         return (AddonTable.IsSelfThornsUp and AddonTable.IsSelfThornsUp() or false) == false
     end }
+P["enred_missing"]  = { label = "Nature's Grasp / Enredamento ausente (não montado)",
+    fn = function(env)
+        if env.mounted then return false end                     -- não sugere montado
+        return (AddonTable.IsSelfEnredUp and AddonTable.IsSelfEnredUp() or false) == false
+    end }
 
 -- Prefixo COMUM a todas as specs de Druid: self-buffs do Druid.
 AddonTable.DruidCommonNodes = {
     { id = "mark_of_the_wild", spellID = 1126, name = "Mark of the Wild", color = "White", condition = "mark_missing", passthrough = true },
     { id = "thorns",           spellID = 467,  name = "Thorns",          color = "White", condition = "thorns_missing", passthrough = true },
+    { id = "natures_grasp",    spellID = 16689, name = "Nature's Grasp", color = "White", condition = "enred_missing", passthrough = true },
 }
 
 function AddonTable.ConcatCommonNodes(common, nodes)

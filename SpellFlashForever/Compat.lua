@@ -327,6 +327,7 @@ local FAMILIES = {
     -- Druid (Forever 1.60.1): ranks conferidos no Questing.wiki/Wowhead Forever (2026-11-14)
     { 1126, 5232, 6756, 5234, 8907, 9884, 9885 },               -- Mark of the Wild (7 ranks)
     { 467, 782, 1075, 8914, 9756, 9910 },                       -- Thorns (6 ranks)
+    { 16689, 16810, 16811, 16812, 16813, 17329 },               -- Nature's Grasp / Enredamento (6 ranks)
     { 22812 },                                                   -- Barkskin (única)
     { 29166 },                                                   -- Innervate (única)
     { 18562 },                                                   -- Swiftmend (única)

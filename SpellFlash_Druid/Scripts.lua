@@ -113,32 +113,56 @@ end
 -- =====================================================
 local MARK_IDS    = { 1126, 5232, 6756, 5234, 8907, 9884, 9885 }
 local THORNS_IDS  = { 467,  782,  1075, 8914, 9756, 9910 }
+local ENRED_IDS   = { 16689, 16810, 16811, 16812, 16813, 17329 }
 local SELF_BUFF_DURATIONS = {}
 for _, id in ipairs(MARK_IDS)   do SELF_BUFF_DURATIONS[id] = 3600 end
 for _, id in ipairs(THORNS_IDS) do SELF_BUFF_DURATIONS[id] = 600  end
+for _, id in ipairs(ENRED_IDS)  do SELF_BUFF_DURATIONS[id] = 45   end
 AddonTable.SelfBuffBelief = AddonTable.SelfBuffBelief or {}
 
 local Buff = SpellFlashAddon.CheckBuff
-local function IsAnySelfBuffUp(selfList)
+local isInCombat = (type(InCombatLockdown) == "function") and InCombatLockdown or function() return false end
+
+local function PrimeSelfBuffBelief(selfList)
+    -- Fora de combate as auras são legíveis: reforça a crença (e o buff realmente está).
     for _, id in ipairs(selfList) do
         local name = SpellName(id)
         if name and Buff then
             local ok, up = pcall(Buff, name, "player")
-            if ok and up then return true end
-        end
-    end
-    if type(InCombatLockdown) == "function" and InCombatLockdown() then
-        for _, id in ipairs(selfList) do
-            local expires = AddonTable.SelfBuffBelief and AddonTable.SelfBuffBelief[id]
-            if expires and type(GetTime) == "function" and GetTime() < expires then
+            if ok and up then
+                AddonTable.SelfBuffBelief[id] = (type(GetTime) == "function" and GetTime() or 0) + SELF_BUFF_DURATIONS[id]
                 return true
             end
         end
     end
     return false
 end
+
+local function IsAnySelfBuffUp(selfList)
+    -- 1) Em combate a leitura vem secret → checa a crença do próprio cast (ou da última vez que sabemos).
+    if isInCombat() then
+        for _, id in ipairs(selfList) do
+            local expires = AddonTable.SelfBuffBelief and AddonTable.SelfBuffBelief[id]
+            if expires and type(GetTime) == "function" and GetTime() < expires then
+                return true
+            end
+        end
+        return false
+    end
+    -- 2) Fora de combate: API positiva vence sempre (e reforça a crença p/ não recomendar no próximo combate).
+    if PrimeSelfBuffBelief(selfList) then return true end
+    -- 3) Mesmo assim, aceite a crença recém-registrada como válida (cast no início da sessão).
+    for _, id in ipairs(selfList) do
+        local expires = AddonTable.SelfBuffBelief and AddonTable.SelfBuffBelief[id]
+        if expires and type(GetTime) == "function" and GetTime() < expires then
+            return true
+        end
+    end
+    return false
+end
 AddonTable.IsSelfMarkUp   = function() return IsAnySelfBuffUp(MARK_IDS) end
 AddonTable.IsSelfThornsUp = function() return IsAnySelfBuffUp(THORNS_IDS) end
+AddonTable.IsSelfEnredUp  = function() return IsAnySelfBuffUp(ENRED_IDS) end
 
 local trackerFrame = CreateFrame("Frame")
 trackerFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
