@@ -311,6 +311,19 @@ local FAMILIES = {
     { 25780 },                                                   -- Righteous Fury (único)
     { 28153 },                                                   -- Holy Shield (VERIFICAR EM JOGO)
     { 853 },                                                      -- Hammer of Justice (único)
+    -- Priest (Forever 1.60.1): cross-check Spy\List.lua 2026-11-14 (Holy Strike-like não há ranks)
+    { 15473 },                                                   -- Shadowform (único)
+    { 8921, 8924, 8925, 8926, 8927, 8928, 8929, 9833, 9834, 9835 }, -- Moonfire (10 ranks Forever)
+    { 589, 594, 970, 3449 },                                     -- Shadow Word: Pain (1-4)
+    { 8092, 8102, 8103, 8104, 8105 },                            -- Mind Blast (1-5)
+    { 2944 },                                                     -- Devouring Plague (novo Forever; VERIFICAR)
+    { 1309595 },                                                  -- Shadow Word: Death (novo Forever; VERIFICAR)
+    { 15407 },                                                    -- Mind Flay (talento Shadow)
+    { 15286 },                                                    -- Vampiric Embrace (talento Shadow)
+    { 585 },                                                      -- Smite (único; ranks posteriores não nomeados)
+    { 14914 },                                                    -- Holy Fire (talento)
+    { 402174 },                                                   -- Penance (talento; novo; VERIFICAR)
+    { 14751 },                                                    -- Inner Focus (talento)
 }
 
 local familyOf = {}

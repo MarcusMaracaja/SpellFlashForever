@@ -657,9 +657,18 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
             iconBtn:SetScript("OnClick", function()
                 local SFA = _G.SpellFlashAddon
                 if not (SFA and SFA.FlashAction) then return end
+                -- "Conhecido" vale para o rank ATUAL no livro do jogador; o spellID do
+                -- nó pode ser de um rank anterior (mais baixo) que o cliente responde
+                -- como "não conhecido". Aceite também pelo nome da magia (minúsculo, como
+                -- vem do book/SpellNameToID) — resolução sempre válida no cliente.
                 if SFA.IsSpellKnown and node.spellID and not SFA.IsSpellKnown(node.spellID) then
-                    DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Rot]|r Você não conhece esta magia ainda.")
-                    return
+                    local localized = moduleAddon and type(moduleAddon.SpellName) == "function" and moduleAddon.SpellName(node.spellID) or nil
+                    local okByName = (node.name and SFA.IsSpellKnown(node.name))
+                        or (localized and SFA.IsSpellKnown(localized))
+                    if not okByName then
+                        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Rot]|r Você não conhece esta magia ainda.")
+                        return
+                    end
                 end
                 pcall(SFA.FlashAction, node.spellID, node.color or "Yellow")
             end)
