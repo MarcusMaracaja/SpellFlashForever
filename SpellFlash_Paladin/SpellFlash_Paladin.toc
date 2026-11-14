@@ -1,0 +1,18 @@
+###############################################################################
+## Interface: 16001
+## Title: SpellFlash Forever: Paladin
+## Notes: Sugestões de magias/habilidades para Paladin Protection (tank) e Retribution (DPS). WoW Forever (Interface 16001). Holy fora de escopo.
+## Author: Marcus (Forever)
+## Version: 1.0.0-forever
+## X-Category: Damage rotations
+## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
+## DefaultState: Enabled
+## Dependencies: SpellFlashForever
+###############################################################################
+
+Localization.lua
+Options.lua
+Functions.lua
+Scripts_PROT.lua
+Scripts_RET.lua
+Scripts.lua
