@@ -1,9 +1,9 @@
 ###############################################################################
 ## Interface: 16001
 ## Title: SpellFlash Forever: Warrior
-## Notes: Sugestões de habilidades para Warrior Arms, Fury e Protection. Portado para WoW Forever (Interface 16001).
+## Notes: Arms / Fury / Protection rotation assistant for WoW Forever. | Assistente de rotação Warrior (Arms/Fury/Protection) para o WoW Forever.
 ## Author: Marcus (SpellFlash original: BigRedBrent)
-## Version: 3.4.0-forever
+## Version: 1.6.0
 ## X-Category: Damage rotations
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## DefaultState: Enabled

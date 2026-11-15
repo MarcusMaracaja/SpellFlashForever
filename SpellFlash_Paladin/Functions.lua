@@ -9,14 +9,14 @@
 -- Estrutura igual aos outros módulos: AddonTable.Castable["Nome"](Fn) → bool.
 
 local AddonName, AddonTable = ...
-local L = AddonTable.Localize
+local L = AddonTable.L
 local SFBF = _G["SpellFlashForever"]
 
 AddonTable.Castable = AddonTable.Castable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.Castable)) or {}
 AddonTable.VehicleCastable = AddonTable.VehicleCastable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.VehicleCastable)) or {}
 AddonTable.ItemCastable = AddonTable.ItemCastable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.ItemCastable)) or {}
 
-print('|cFF00FF00[SF Paladin]|r Functions carregado!')
+print(string.format(L.mod_loaded, "Paladin", L.mod_load_functions))
 
 local function SpellName(id) return AddonTable.SpellName(id) end
 local Buff = SpellFlashAddon.CheckBuff
@@ -119,17 +119,17 @@ end
 -- =====================================================
 AddonTable.RotationPredicates = AddonTable.RotationPredicates or {}
 local P = AddonTable.RotationPredicates
-P["always"]        = { label = "sempre", fn = function(env) return true end }
-P["is_aoe"]        = { label = "AoE (2+ inimigos)", fn = function(env) return env.isAoE and true or false end }
-P["aoe_and_enemy"] = { label = "AoE com alvo atacável", fn = function(env) return env.isAoE and env.hasActiveEnemy and true or false end }
-P["has_enemy"]     = { label = "alvo atacável", fn = function(env) return env.hasActiveEnemy and true or false end }
-P["enemy_casting"] = { label = "alvo atacável conjurando (stun/interrupt)",
+P["always"]        = { label = L.pred_always, fn = function(env) return true end }
+P["is_aoe"]        = { label = L.pred_aoe2, fn = function(env) return env.isAoE and true or false end }
+P["aoe_and_enemy"] = { label = L.pred_aoe_and_enemy, fn = function(env) return env.isAoE and env.hasActiveEnemy and true or false end }
+P["has_enemy"]     = { label = L.pred_has_enemy, fn = function(env) return env.hasActiveEnemy and true or false end }
+P["enemy_casting"] = { label = L.pred_casting_stun,
     fn = function(env)
         if not env.hasActiveEnemy then return false end
         return AddonTable.IsTargetInterruptibleCasting and AddonTable.IsTargetInterruptibleCasting("target") and true or false
     end }
-P["target_hp20"]   = { label = "alvo abaixo de 20%", fn = function(env) return (env.targetHP or 100) < 20 end }
-P["undead_or_demon"] = { label = "alvo é morto-vivo ou demônio (Exorcism)",
+P["target_hp20"]   = { label = L.pred_target_hp20, fn = function(env) return (env.targetHP or 100) < 20 end }
+P["undead_or_demon"] = { label = L.pred_undead_or_demon,
     fn = function(env)
         if not env.hasActiveEnemy then return false end
         local t = UnitCreatureType and UnitCreatureType("target")
@@ -138,17 +138,17 @@ P["undead_or_demon"] = { label = "alvo é morto-vivo ou demônio (Exorcism)",
         return (low:find("undead") or low:find("morto") or low:find("demon")
             or low:find("demônio") or low:find("demoní")) and true or false
     end }
-P["not_righteous_fury_up"] = { label = "Protection e Righteous Fury ausente",
+P["not_righteous_fury_up"] = { label = L.pred_prot_fury,
     fn = function(env)
         if env.spec ~= "PROT" then return false end
         return not (AddonTable.IsSelfBuffUp and AddonTable.IsSelfBuffUp(25780)) and true or false
     end }
-P["holy_shield_missing"] = { label = "Protection e Holy Shield ausente",
+P["holy_shield_missing"] = { label = L.pred_prot_shield,
     fn = function(env)
         if env.spec ~= "PROT" then return false end
         return not (AddonTable.IsSelfBuffUp and AddonTable.IsSelfBuffUp(28153)) and true or false
     end }
-P["seal_of_command_missing"] = { label = "Retribution e Seal of Command ausente",
+P["seal_of_command_missing"] = { label = L.pred_ret_seal,
     fn = function(env)
         if env.spec ~= "RET" then return false end
         return not (AddonTable.IsSelfBuffUp and AddonTable.IsSelfBuffUp(20915)) and true or false

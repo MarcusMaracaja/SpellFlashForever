@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: SpellFlash Forever: Hunter
-## Notes: Modulo Hunter para o SpellFlash Forever (WoW Forever). Adaptado do SpellFlash (WotLK).
+## Notes: Beast Mastery / Marksmanship / Survival rotation assistant for WoW Forever. | Assistente de rotação Hunter para o WoW Forever (Beast Mastery/Marksmanship/Survival).
 ## Author: Marcus (SpellFlash original: SF Community)
-## Version: 1.4.0
+## Version: 1.6.0
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## Dependencies: SpellFlashForever
 

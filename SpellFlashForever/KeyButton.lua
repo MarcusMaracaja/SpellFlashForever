@@ -22,6 +22,7 @@
 local addonName = "SpellFlashForever"
 local s = _G[addonName]
 if not s then return end
+local L = s.L
 
 local frame
 local keyText
@@ -92,9 +93,9 @@ function s.SetKeyButtonLocked(locked)
     local cfg = GetConfig()
     cfg.locked = locked and true or nil
     if locked then
-        Print("Movimento do botão bloqueado.")
+        Print(L.key_lock)
     else
-        Print("Arraste o botão para movê-lo.")
+        Print(L.key_unlock)
     end
     return IsLocked()
 end
@@ -391,7 +392,7 @@ local previousOnFlash = s.OnFlash
 s.OnFlash = function(button, slot)
     local ok, err = pcall(HandleFlash, button, slot)
     if not ok then
-        Print("Erro no botão de tecla: " .. tostring(err))
+        Print(string.format(L.key_error, tostring(err)))
     end
     if previousOnFlash then
         pcall(previousOnFlash, button, slot)
@@ -532,17 +533,17 @@ local function SlashHandler(msg)
     msg = (msg or ""):gsub("^%s+", ""):gsub("%s+$", ""):lower()
 
     if msg == "" then
-        Print("/sfkey: botão com a tecla da habilidade que está brilhando")
+        Print(L.key_help)
         return
     end
 
     if msg == "off" then
         s.SetKeyButtonEnabled(false)
-        Print("Botão de tecla desligado. /sfkey on para religar.")
+        Print(L.key_off_hint)
         return
     elseif msg == "on" then
         s.SetKeyButtonEnabled(true)
-        Print("Botão de tecla ligado.")
+        Print(L.key_on)
         return
     end
 
@@ -555,25 +556,25 @@ local function SlashHandler(msg)
         cfg.x, cfg.y = nil, nil
         positioned = false
         ApplyPosition(cfg)
-        Print("Posição do botão restaurada.")
+        Print(L.key_pos_reset)
     elseif msg == "hide" then
         frame:Hide()
-        Print("Botão de tecla oculto.")
+        Print(L.key_hidden)
     elseif msg == "show" then
         positioned = false
         ApplyPosition(GetConfig())
         frame:Show()
         frame:SetAlpha(0.5)
-        Print("Botão de tecla visível.")
+        Print(L.key_shown)
     elseif msg == "debug" then
         debugEnabled = not debugEnabled
         if debugEnabled then
-            Print("Depuração ativada. Dispare um flash e veja as mensagens no chat.")
+            Print(L.key_debug_on)
         else
-            Print("Depuração desativada.")
+            Print(L.key_debug_off)
         end
     else
-        Print("Comandos: on/off, lock/unlock, reset, show, hide, debug")
+        Print(L.key_commands)
     end
 end
 

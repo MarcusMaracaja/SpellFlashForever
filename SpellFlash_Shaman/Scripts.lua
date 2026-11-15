@@ -20,7 +20,7 @@ local InCombat = SpellFlashAddon.InCombat
 if not AddonTable.ShouldUseRacial then AddonTable.ShouldUseRacial = function() return nil end end
 if not AddonTable.ShouldUseTrinket then AddonTable.ShouldUseTrinket = function() return nil end end
 
-local L = AddonTable.Localize
+local L = AddonTable.L
 local Buff = SpellFlashAddon.CheckBuff
 local Debuff = SpellFlashAddon.CheckDebuff
 local HealthPercent = SpellFlashAddon.HealthPercent
@@ -334,7 +334,7 @@ SpellFlashAddon.Spam[AddonName] = function(x)
     elseif SpellFlashAddon.IsSpellKnown and SpellFlashAddon.IsSpellKnown(17364) then
         isELE, isENH, specSource = false, true, "ENH(17364=Stormstrike)"
     else
-        isELE, isENH, specSource = true, false, "padrão Elemental"
+        isELE, isENH, specSource = true, false, L.dbg_default_spec .. " Elemental"
     end
     -- Estampa a spec no env (a declaração de nós de prefixo comum usa env.spec)
     env.spec = isENH and "ENH" or "ELE"
@@ -343,9 +343,9 @@ SpellFlashAddon.Spam[AddonName] = function(x)
     if not AddonTable.SpecMessageSent then
         local msg = "|cFF00FF00[SF Shaman]|r "
         if isENH then
-            print(msg.."|cFF69CCF0Enhancement:|r Podem dobrar o ferro — a tempestade responde aos seus punhos!")
+            print(msg .. L.bless_enh)
         else
-            print(msg.."|cFFFF8000Elemental:|r Aberração elemental — a tempestade lhe obedece!")
+            print(msg .. L.bless_ele)
         end
         print(msg.."|cFFCCCCCCspec:|r " .. tostring(specSource) .. " (Elemental=" .. tostring(pointsELE) .. " Enhancement=" .. tostring(pointsENH) .. ")")
         if AddonTable.ShowRacialInfo and not AddonTable.RacialGreetingSent then
@@ -408,13 +408,13 @@ end
 SLASH_SFSHAMTREES1 = "/sftreessh"
 SlashCmdList["SFSHAMTREES"] = function()
     local function P(m) DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Shaman Trees]|r " .. tostring(m)) end
-    if not (C_ClassTalents and C_Traits) then P("C_ClassTalents/C_Traits ausentes") return end
+    if not (C_ClassTalents and C_Traits) then P(L.dbg_traits_absent) return end
     local r = SpellFlashAddon.CountTalentTreePoints and SpellFlashAddon.CountTalentTreePoints(TREE_HINTS_SHAMAN)
-    if not r then P("Contagem indisponível") return end
+    if not r then P(L.dbg_count_na) return end
     for i, name in ipairs(r.names or {}) do
         P(tostring(i) .. ": " .. tostring(name))
     end
     P("counts:", "ELE=" .. tostring(r.counts and r.counts.ELE) .. " ENH=" .. tostring(r.counts and r.counts.ENH) .. " REST=" .. tostring(r.counts and r.counts.REST))
 end
 
-print('|cFF00FF00[SF Shaman]|r Scripts Core Carregado!')
+print(string.format(L.mod_loaded, "Shaman", L.mod_load_scripts))

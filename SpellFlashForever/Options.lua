@@ -4,6 +4,9 @@
 local addonName = "SpellFlashForever"
 local s = _G[addonName]
 if not s then return end
+local L = s.L
+local ADDON_VERSION = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version"))
+    or (GetAddOnMetadata and GetAddOnMetadata(addonName, "Version")) or "1.6.0"
 
 local registeredTabs = {}
 local tabButtons = {}
@@ -110,40 +113,40 @@ local function BuildGeneralTab(parent)
 
     local title = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 16, -16)
-    title:SetText("|cff33ff99Configurações Gerais|r")
+    title:SetText(L.opt_general_title)
 
     local desc = parent:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-    desc:SetText("Ajuste as opções visuais e comportamento de sugestões.")
+    desc:SetText(L.opt_general_desc)
 
     local y = -58
 
     -- 1. Ativar Flashing
-    CreateCheck(parent, "SFBF_GUI_Flashing", "Ativar Sugestões de Feitiços (Spell Flashing)",
-        "Pisca as habilidades recomendadas nas barras de ação.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_Flashing", L.opt_flash_enable,
+        L.opt_flash_enable_tt, 16, y,
         function() return not handle.spell_flashing_off end,
         function(val) handle.spell_flashing_off = (not val) or nil end
     )
     y = y - 30
 
     -- 2. Tipos de brilho
-    CreateCheck(parent, "SFBF_GUI_FlashBorder", "Brilho de contorno (borda)",
-        "Pisca a borda do botão em vez do brilho de estrela sobreposto.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_FlashBorder", L.opt_flash_border,
+        L.opt_flash_border_tt, 16, y,
         function() return handle.flash_mode == "border" end,
         function(val) handle.flash_mode = val and "border" or "overlay" end
     )
     y = y - 30
 
-    CreateCheck(parent, "SFBF_GUI_FlashSolid", "Cor sólida (sem transparência)",
-        "Mantém o brilho na opacidade máxima, sem esmaecer.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_FlashSolid", L.opt_flash_solid,
+        L.opt_flash_solid_tt, 16, y,
         function() return not not handle.flash_solid end,
         function(val) handle.flash_solid = val and true or nil end
     )
     y = y - 30
 
     -- 3. Mesma cor para todos os brilhos
-    CreateCheck(parent, "SFBF_GUI_SingleColor", "Mesma cor para todos os brilhos",
-        "Quando ligado, todos os flashes usam a cor escolhida e ignoram a cor individual.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_SingleColor", L.opt_single_color,
+        L.opt_single_color_tt, 16, y,
         function() return not not handle.flash_single_color end,
         function(val)
             handle.flash_single_color = val and true or nil
@@ -154,16 +157,16 @@ local function BuildGeneralTab(parent)
 
     -- Linha de cores (rádio-botão, 2 colunas x 5 linhas)
     local colorChoices = {
-        { key = "yellow", label = "Amarelo", hex = "|cffffff00" },
-        { key = "white",  label = "Branco",  hex = "|cffffffff" },
-        { key = "red",    label = "Vermelho", hex = "|cffff2020" },
-        { key = "green",  label = "Verde",   hex = "|cff20ff20" },
-        { key = "blue",   label = "Azul",    hex = "|cff2020ff" },
-        { key = "aqua",   label = "Ciano",   hex = "|cff20ffff" },
-        { key = "orange", label = "Laranja", hex = "|cffff8000" },
-        { key = "purple", label = "Roxo",    hex = "|cffff20ff" },
-        { key = "pink",   label = "Rosa",    hex = "|cffff40a0" },
-        { key = "gray",   label = "Cinza",   hex = "|cff7f7f7f" },
+        { key = "yellow", label = L.col_yellow, hex = "|cffffff00" },
+        { key = "white",  label = L.col_white,  hex = "|cffffffff" },
+        { key = "red",    label = L.col_red,    hex = "|cffff2020" },
+        { key = "green",  label = L.col_green,  hex = "|cff20ff20" },
+        { key = "blue",   label = L.col_blue,   hex = "|cff2020ff" },
+        { key = "aqua",   label = L.col_aqua,   hex = "|cff20ffff" },
+        { key = "orange", label = L.col_orange, hex = "|cffff8000" },
+        { key = "purple", label = L.col_purple, hex = "|cffff20ff" },
+        { key = "pink",   label = L.col_pink,   hex = "|cffff40a0" },
+        { key = "gray",   label = L.col_gray,   hex = "|cff7f7f7f" },
     }
     for i, choice in ipairs(colorChoices) do
         local col = math.floor((i - 1) / 5)
@@ -190,31 +193,31 @@ local function BuildGeneralTab(parent)
     y = y - (5 * 22 + 8)
 
     -- 2. Suprimir alcance
-    CreateCheck(parent, "SFBF_GUI_Range", "Suprimir verificação de alcance",
-        "Piscar botões mesmo se o alvo estiver fora de alcance.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_Range", L.opt_suppress_range,
+        L.opt_suppress_range_tt, 16, y,
         function() return not not handle.suppress_range_check end,
         function(val) handle.suppress_range_check = val or nil end
     )
     y = y - 30
 
     -- 3. Suprimir movimento
-    CreateCheck(parent, "SFBF_GUI_Speed", "Suprimir verificação de movimento",
-        "Piscar botões mesmo durante movimento.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_Speed", L.opt_suppress_speed,
+        L.opt_suppress_speed_tt, 16, y,
         function() return not not handle.suppress_speed_check end,
         function(val) handle.suppress_speed_check = val or nil end
     )
     y = y - 30
 
     -- 4. Desativar detecção de imunidade
-    CreateCheck(parent, "SFBF_GUI_Immune", "Desativar detecção automática de imunidade",
-        "Não registrar imunidades de criaturas contra tipos de magia.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_Immune", L.opt_disable_immune,
+        L.opt_disable_immune_tt, 16, y,
         function() return not not handle.auto_mob_immune_detection_off end,
         function(val) handle.auto_mob_immune_detection_off = val or nil end
     )
     y = y - 44
 
     -- 5. Slider de Tamanho do Flash (%)
-    CreateSlider(parent, "SFBF_GUI_Slider_Size", "Tamanho do Flash", 100, 400, 10, 20, y,
+    CreateSlider(parent, "SFBF_GUI_Slider_Size", L.opt_flash_size, 100, 400, 10, 20, y,
         function() return s.GetFlashSize and s.GetFlashSize() or 240 end,
         function(val) if s.SetFlashSize then s.SetFlashSize(val) end end,
         function(val) return val .. "%" end
@@ -222,7 +225,7 @@ local function BuildGeneralTab(parent)
     y = y - 48
 
     -- 6. Slider de Brilho do Flash (%)
-    CreateSlider(parent, "SFBF_GUI_Slider_Bright", "Brilho / Opacidade do Flash", 10, 100, 5, 20, y,
+    CreateSlider(parent, "SFBF_GUI_Slider_Bright", L.opt_flash_bright, 10, 100, 5, 20, y,
         function() return s.GetFlashBrightness and s.GetFlashBrightness() or 100 end,
         function(val) if s.SetFlashBrightness then s.SetFlashBrightness(val) end end,
         function(val) return val .. "%" end
@@ -230,8 +233,8 @@ local function BuildGeneralTab(parent)
     y = y - 40
 
     -- Botão no minimapa (mostra/esconde)
-    CreateCheck(parent, "SFBF_GUI_MinimapButton", "Mostrar botão no minimapa",
-        "Exibe um botão no minimapa que abre/fecha este menu. Arraste-o para reposicionar. Use /sfminimap para igualmente esconder/mostrar.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_MinimapButton", L.opt_minimap,
+        L.opt_minimap_tt, 16, y,
         function()
             local db = SpellFlashForeverDB and SpellFlashForeverDB.handle and SpellFlashForeverDB.handle.minimap_button
             if db and db.hidden then return false end
@@ -248,16 +251,16 @@ local function BuildGeneralTab(parent)
     y = y - 36
 
     -- Botão que mostra a tecla da habilidade em destaque
-    CreateCheck(parent, "SFBF_GUI_KeyButton", "Mostrar botão com a tecla da habilidade",
-        "Exibe um botão extra mostrando a tecla que deve ser apertada para a habilidade que está brilhando.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_KeyButton", L.opt_keybutton,
+        L.opt_keybutton_tt, 16, y,
         function() return (s.IsKeyButtonEnabled and s.IsKeyButtonEnabled()) and true or false end,
         function(val) if s.SetKeyButtonEnabled then s.SetKeyButtonEnabled(val) end end
     )
     y = y - 32
 
     -- Trava do botão de tecla (não arrasta) — persistido
-    CreateCheck(parent, "SFBF_GUI_KeyButtonLocked", "Travar o botão de tecla (não arrasta)",
-        "Impede que o botão de tecla seja arrastado por engano. Use junto com 'Mostrar botão com a tecla da habilidade'.", 16, y,
+    CreateCheck(parent, "SFBF_GUI_KeyButtonLocked", L.opt_keybutton_lock,
+        L.opt_keybutton_lock_tt, 16, y,
         function() return (s.GetKeyButtonLocked and s.GetKeyButtonLocked()) and true or false end,
         function(val) if s.SetKeyButtonLocked then s.SetKeyButtonLocked(val) end end
     )
@@ -267,16 +270,16 @@ local function BuildGeneralTab(parent)
     local testBtn = CreateFrame("Button", "SFBF_GUI_TestButton", parent, "UIPanelButtonTemplate")
     testBtn:SetPoint("TOPLEFT", 16, y)
     testBtn:SetSize(140, 24)
-    testBtn:SetText("Testar Flash")
+    testBtn:SetText(L.opt_test_button)
     testBtn:SetScript("OnClick", function()
         local btn = _G["ActionButton1"]
         if btn and s.FlashFrame then
             local size = s.GetFlashSize and s.GetFlashSize() or 240
             local bright = s.GetFlashBrightness and s.GetFlashBrightness() or 100
             s.FlashFrame(btn, "yellow", size, bright, false, nil, false, false)
-            DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlash Forever:|r Testando flash no Botão 1.")
+            DEFAULT_CHAT_FRAME:AddMessage(L.opt_test_msg)
         else
-            DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlash Forever:|r Botão 1 não encontrado para teste.")
+            DEFAULT_CHAT_FRAME:AddMessage(L.opt_test_fail)
         end
     end)
 end
@@ -295,7 +298,7 @@ local function BuildAboutTab(parent)
 
     local version = parent:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     version:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
-    version:SetText("Versão 1.5.0-forever · WoW Forever (Interface 16001)")
+    version:SetText(string.format(L.about_version, ADDON_VERSION))
 
     local function AddSection(anchorTo, yOffset, header, body)
         local h = parent:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -311,20 +314,20 @@ local function BuildAboutTab(parent)
         return b
     end
 
-    local s1 = AddSection(logo, -4, "O que é",
-        "O SpellFlash Forever é um assistente de rotação para o WoW Forever. A cada 0,2s ele avalia seu alvo, sua spec, seus talentos, sua mana, seu alcance e o estado do combate — e faz piscar na barra de ação a habilidade que você deveria usar agora.\n\nCada habilidade pisca com a cor da sua função: dano principal (amarelo), AoE (roxo), interrupção/controle (ciano), defensivo (vermelho), utilidade (verde) e situacional (rosa/laranja).")
+    local s1 = AddSection(logo, -4, L.about_what_is,
+        L.about_what_is_body)
 
-    local s2 = AddSection(s1, -14, "O que inclui",
-        "• Núcleo SpellFlashForever: driver de sugestões, crenças de auras em combate, editor visual de rotação por personagem (/sf, seção \"Rotação personalizada\" em cada aba de classe), botão de tecla nos botões, botão de minimapa.\n• Módulos de classe: Hunter, Shaman, Warrior e Druid — cada um com a rotação recomendada do Forever como padrão, editável por personagem.\n• Um erro por vez; toda mudança é registrada no histórico do projeto.")
+    local s2 = AddSection(s1, -14, L.about_includes,
+        L.about_includes_body)
 
-    local s3 = AddSection(s2, -14, "Como usar",
-        "/sf abre (e fecha) esta janela. A aba de cada classe tem o toggle do módulo, a detecção de spec (com override) e o editor de rotação. /sf status mostra o estado do módulo. /sfminimap alterna o botão no minimapa.")
+    local s3 = AddSection(s2, -14, L.about_howto,
+        L.about_howto_body)
 
-    local s4 = AddSection(s3, -14, "Créditos — criação",
-        "|cffffffffMarcus|r — criação e direção do projeto SpellFlash Forever.\n\n|cffffffffInkling 2 Small Free (OpenCode)|r — parceiro de tecnologia e desenvolvimento: inteligência artificial usada como par de programação (pesquisas, arquitetura, código, testes e documentação).\n\nSpellFlash original (WotLK 3.3.5a): Exalter (Druid), BigRedBrent (Warrior), SF Community (Shaman) e comunidade SpellFlash. Este projeto é um port/derivado, com profundo retrabalho de arquitetura e de rotação para o Forever.")
+    local s4 = AddSection(s3, -14, L.about_credits,
+        L.about_credits_body)
 
-    local s5 = AddSection(s4, -14, "Agradecimentos",
-        "Ao time do WoW Forever, à comunidade de teoria de rotações e a quem testou o addon em jogo e reportou cada erro — cada correção virou uma entrada no histórico do projeto.")
+    local s5 = AddSection(s4, -14, L.about_thanks,
+        L.about_thanks_body)
 end
 
 -- Seleção de Abas (ignora abas ocultas pela classe do jogador)
@@ -476,8 +479,8 @@ function s.OpenOptions()
 end
 
 -- Registra as abas padrão: Geral e Sobre
-s.RegisterConfigTab("general", "Geral", BuildGeneralTab)
-s.RegisterConfigTab("about", "Sobre", BuildAboutTab)
+s.RegisterConfigTab("general", L.tab_general, BuildGeneralTab)
+s.RegisterConfigTab("about", L.tab_about, BuildAboutTab)
 
 -- Integração de fallback com o painel de Opções nativo do WoW
 local function CreateBlizzardSettingsCategory()
@@ -492,12 +495,12 @@ local function CreateBlizzardSettingsCategory()
 
     local desc = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
-    desc:SetText("Clique no botão abaixo para abrir a janela completa de configurações do SpellFlash Forever.")
+    desc:SetText(L.settings_hint)
 
     local openBtn = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
     openBtn:SetPoint("TOPLEFT", 16, -60)
     openBtn:SetSize(220, 30)
-    openBtn:SetText("Abrir Menu SpellFlash Forever")
+    openBtn:SetText(L.settings_open)
     openBtn:SetScript("OnClick", function()
         s.OpenOptions()
     end)

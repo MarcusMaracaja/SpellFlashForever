@@ -8,6 +8,7 @@
 local addonName = "SpellFlashForever"
 local s = _G[addonName]
 if not s then return end
+local L = s.L
 
 local function GetConfig()
     local db = _G.SpellFlashForeverDB
@@ -56,8 +57,8 @@ local function Build()
     b:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:AddLine("SpellFlashForever", 1, 0.82, 0)
-        GameTooltip:AddLine("Clique para abrir/fechar o menu.", 1, 1, 1, true)
-        GameTooltip:AddLine("Arraste para reposicionar. Use /sfminimap para esconder/mostrar.", 0.7, 0.7, 0.7, true)
+        GameTooltip:AddLine(L.minimap_tt_open, 1, 1, 1, true)
+        GameTooltip:AddLine(L.minimap_tt_drag, 0.7, 0.7, 0.7, true)
         GameTooltip:Show()
     end)
     b:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -129,13 +130,13 @@ SlashCmdList["SFMINIMAP"] = function(msg)
     msg = msg and msg:lower():gsub("^%s+", ""):gsub("%s+$", "") or ""
     if msg == "show" or msg == "mostrar" or msg == "on" then
         s.ShowMinimapButton()
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r botão do minimapa mostrado.")
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.minimap_toggle, L.minimap_shown))
         return
     elseif msg == "hide" or msg == "esconder" or msg == "off" then
         s.HideMinimapButton()
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r botão do minimapa escondido.")
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.minimap_toggle, L.minimap_hidden))
         return
     end
     local shown = s.ToggleMinimapButton()
-    DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r botão do minimapa " .. (shown and "mostrado" or "escondido") .. ".")
+    DEFAULT_CHAT_FRAME:AddMessage(string.format(L.minimap_toggle, shown and L.minimap_shown or L.minimap_hidden))
 end

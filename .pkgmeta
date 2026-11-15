@@ -1,8 +1,8 @@
 # CurseForge packager metadata
-# Repositório com 5 addons na raiz:
+# Repositório com 6 addons na raiz:
 #   SpellFlashForever (core)
-#   SpellFlash_Hunter / _Shaman / _Warrior / _Druid (módulos)
-# Garante que o build empacote as 5 pastas soltas na raiz do ZIP
+#   SpellFlash_Hunter / _Shaman / _Warrior / _Druid / _Paladin (módulos)
+# Garante que o build empacote as 6 pastas soltas na raiz do ZIP
 # (sem pasta-embrulho por cima).
 package-as: SpellFlashForever
 move-folders:
@@ -11,3 +11,4 @@ move-folders:
   SpellFlash_Shaman: SpellFlash_Shaman
   SpellFlash_Warrior: SpellFlash_Warrior
   SpellFlash_Druid: SpellFlash_Druid
+  SpellFlash_Paladin: SpellFlash_Paladin

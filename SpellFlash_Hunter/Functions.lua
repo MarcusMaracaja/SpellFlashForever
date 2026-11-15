@@ -1,6 +1,6 @@
 local AddonName, AddonTable = ...
 
-local L = AddonTable.Localize
+local L = AddonTable.L
 local SFBF = _G["SpellFlashForever"]
 
 AddonTable.Castable = AddonTable.Castable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.Castable)) or {}
@@ -12,58 +12,58 @@ SLASH_SFCD1 = "/sfcd"
 SlashCmdList["SFCD"] = function(msg)
     local function P(m) DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF CD]|r " .. tostring(m)) end
     local id = tonumber(((msg or ""):gsub("%s+", "")))
-    if not id then P("uso: /sfcd <spellID>") return end
-    P("spellID=" .. tostring(id) .. " name=" .. tostring(AddonTable.SpellName and AddonTable.SpellName(id)))
+    if not id then P(L.cd_usage) return end
+    P(string.format(L.cd_spellid, tostring(id), tostring(AddonTable.SpellName and AddonTable.SpellName(id))))
 
     if C_Spell and type(C_Spell.GetSpellCooldown) == "function" then
         local knownID = SpellFlashAddon and SpellFlashAddon.ResolveKnownID and SpellFlashAddon.ResolveKnownID(id) or id
         if knownID ~= id then
-            P("resolve -> rank conhecido: " .. tostring(knownID))
+            P(string.format(L.cd_resolve_known, tostring(knownID)))
             local okK, infoK = pcall(C_Spell.GetSpellCooldown, knownID)
-            P("GetSpellCooldown(rank: " .. tostring(knownID) .. "): ok=" .. tostring(okK) .. " tipo=" .. type(infoK))
+            P(string.format(L.cd_getcooldown_rank, tostring(knownID), tostring(okK), type(infoK)))
             if okK and type(infoK) == "table" then
                 for k, v in pairs(infoK) do
-                    P("  rank info." .. tostring(k) .. " = " .. tostring(v) .. " (" .. type(v) .. ")")
+                    P(string.format(L.cd_rank_info, tostring(k), tostring(v), type(v)))
                 end
             end
             local tlK, durK = SpellFlashAddon and SpellFlashAddon.SpellCooldown and SpellFlashAddon.SpellCooldown(knownID)
-            P("SpellCooldown(rank: " .. tostring(knownID) .. "): timeLeft=" .. tostring(tlK) .. " dur=" .. tostring(durK))
+            P(string.format(L.cd_spellcooldown_rank, tostring(knownID), tostring(tlK), tostring(durK)))
         end
     end
 
     if C_Spell and type(C_Spell.GetSpellCooldown) == "function" then
         local ok, info = pcall(C_Spell.GetSpellCooldown, id)
-        P("GetSpellCooldown(raw: " .. tostring(id) .. "): ok=" .. tostring(ok) .. " tipo=" .. type(info))
+        P(string.format(L.cd_getcooldown_raw, tostring(id), tostring(ok), type(info)))
         if ok and type(info) == "table" then
             for k, v in pairs(info) do
-                P("  info." .. tostring(k) .. " = " .. tostring(v) .. " (" .. type(v) .. ")")
+                P(string.format(L.cd_info, tostring(k), tostring(v), type(v)))
             end
         elseif ok and info ~= nil then
-            P("  retorno: " .. tostring(info))
+            P(string.format(L.cd_return, tostring(info)))
         end
     else
-        P("GetSpellCooldown: ausente")
+        P(L.cd_getcooldown_absent)
     end
 
     if C_Spell and type(C_Spell.GetSpellCooldownDuration) == "function" then
         local ok, d = pcall(C_Spell.GetSpellCooldownDuration, id)
-        P("GetSpellCooldownDuration: ok=" .. tostring(ok) .. " tipo=" .. type(d) .. " valor=" .. tostring(d))
+        P(string.format(L.cd_duration, tostring(ok), type(d), tostring(d)))
         ok, d = pcall(C_Spell.GetSpellCooldownDuration, id, true)
-        P("GetSpellCooldownDuration(id,ignoreGCD=true): ok=" .. tostring(ok) .. " tipo=" .. type(d) .. " valor=" .. tostring(d))
+        P(string.format(L.cd_duration_ignoredcf, tostring(ok), type(d), tostring(d)))
     end
 
     if SpellFlashAddon and SpellFlashAddon.SpellCooldown then
         local tl, dur = SpellFlashAddon.SpellCooldown(id)
-        P("SpellCooldown(raw: " .. tostring(id) .. "): timeLeft=" .. tostring(tl) .. " dur=" .. tostring(dur))
+        P(string.format(L.cd_raw, tostring(id), tostring(tl), tostring(dur)))
     end
 
     if SpellFlashAddon and SpellFlashAddon.ResolveKnownID then
         local knownID = SpellFlashAddon.ResolveKnownID(id)
         local slot = SpellFlashAddon.FindActionSlot and SpellFlashAddon.FindActionSlot(knownID)
-        P("Action slot pro rank conhecido = " .. tostring(slot))
+        P(string.format(L.cd_action_slot, tostring(slot)))
         if slot and SpellFlashAddon.ActionCooldown then
             local sc, sd = SpellFlashAddon.ActionCooldown(slot)
-            P("ActionCooldown(slot): timeLeft=" .. tostring(sc) .. " dur=" .. tostring(sd))
+            P(string.format(L.cd_cooldown_slot, tostring(sc), tostring(sd)))
         end
     end
 
@@ -71,15 +71,15 @@ SlashCmdList["SFCD"] = function(msg)
     if SpellFlashAddon and SpellFlashAddon.CheckIfSpellCastable then
         local okSample, sample = pcall(function()
             local name = AddonTable.SpellName and AddonTable.SpellName(id)
-            if not name then return "nome inexistente" end
+            if not name then return L.cd_not_found end
             local z = { SpellName = name }
             return SpellFlashAddon.CheckIfSpellCastable(z)
         end)
-        P("CheckIfSpellCastable(simulado) = " .. tostring(sample))
+        P(string.format(L.cd_simulated, tostring(sample)))
     end
 end
 
-print('|cFF00FF00[SF Hunter]|r Functions Carregado com Sucesso!')
+print(string.format(L.mod_loaded, "Hunter", L.mod_load_functions))
 
 -- Os utilitários de alcance/distância/ranks/kit nome + GetNumPartyMembers/GetNumRaidMembers
 -- migraram para o SpellFlashForever (SharedFunctions.lua, H-0083). Delegação abaixo.
@@ -574,64 +574,64 @@ AddonTable.IsTargetImmune = SFBF and SFBF.IsTargetImmune
 -- =====================================================
 AddonTable.RotationPredicates = AddonTable.RotationPredicates or {}
 local P = AddonTable.RotationPredicates
-P["always"]           = { label = "sempre", fn = function(env) return true end }
-P["not_too_close_ranged"] = { label = "fora da dead zone (ranged)", fn = function(env) return not env.tooCloseForRanged and true or false end }
-P["has_enemy"]        = { label = "alvo atacável", fn = function(env) return env.hasActiveEnemy and true or false end }
-P["in_combat"]        = { label = "em combate", fn = function(env) return env.inCombat and true or false end }
-P["is_aoe"]           = { label = "AoE (2+ inimigos)", fn = function(env) return env.isAoE and true or false end }
-P["aoe_not_too_close"] = { label = "AoE e fora da dead zone",
+P["always"]           = { label = L.pred_always, fn = function(env) return true end }
+P["not_too_close_ranged"] = { label = L.pred_ranged, fn = function(env) return not env.tooCloseForRanged and true or false end }
+P["has_enemy"]        = { label = L.pred_has_enemy, fn = function(env) return env.hasActiveEnemy and true or false end }
+P["in_combat"]        = { label = L.pred_in_combat, fn = function(env) return env.inCombat and true or false end }
+P["is_aoe"]           = { label = L.pred_aoe2, fn = function(env) return env.isAoE and true or false end }
+P["aoe_not_too_close"] = { label = L.pred_aoe_dead_zone,
     fn = function(env) return env.isAoE and not env.tooCloseForRanged and true or false end }
-P["aoe_not_pvp_mana15"] = { label = "AoE, PvE e mana acima de 15%",
+P["aoe_not_pvp_mana15"] = { label = L.pred_aoe_pve_mana15,
     fn = function(env) return env.isAoE and not env.isPvP and (env.manaPct or 100) > 15 end }
-P["not_aoe_not_too_close"] = { label = "alvo único e fora da dead zone",
+P["not_aoe_not_too_close"] = { label = L.pred_single_dead_zone,
     fn = function(env) return env.hasActiveEnemy and not env.tooCloseForRanged and not env.isAoE and true or false end }
-P["enemy_in_combat_not_too_close"] = { label = "alvo atacável, em combate e fora da dead zone",
+P["enemy_in_combat_not_too_close"] = { label = L.pred_enemy_combat_dead_zone,
     fn = function(env)
         return env.hasActiveEnemy and not env.tooCloseForRanged and (type(UnitAffectingCombat) == "function" and UnitAffectingCombat("player")) and true or false
     end }
-P["enemy_interruptible_not_cc_not_too_close"] = { label = "alvo conjurando (interruptível), fora da dead zone e sem CC nele",
+P["enemy_interruptible_not_cc_not_too_close"] = { label = L.pred_interruptible_nocc,
     fn = function(env)
         if not (env.hasActiveEnemy and not env.tooCloseForRanged) then return false end
         if SpellFlashAddon.IsCrowedControlled and SpellFlashAddon.IsCrowedControlled("target") then return false end
         return AddonTable.IsTargetInterruptibleCasting and AddonTable.IsTargetInterruptibleCasting("target") and true or false
     end }
-P["pet_interruptible"] = { label = "alvo conjurando, pet vivo, fora da dead zone e alvo sem CC",
+P["pet_interruptible"] = { label = L.pred_pet_interruptible,
     fn = function(env)
         if not (env.hasActiveEnemy and not env.tooCloseForRanged) then return false end
         if not env.petAlive then return false end
         if SpellFlashAddon.IsCrowedControlled and SpellFlashAddon.IsCrowedControlled("target") then return false end
         return AddonTable.IsTargetInterruptibleCasting and AddonTable.IsTargetInterruptibleCasting("target") and true or false
     end }
-P["pvp_target_mana"]   = { label = "PvP e alvo com mana",
+P["pvp_target_mana"]   = { label = L.pred_pvp_target_mana,
     fn = function(env)
         if not (env.isPvP and env.hasActiveEnemy) then return false end
         return type(UnitPowerType) == "function" and UnitPowerType("target") == 0 and true or false
     end }
-P["pvp_target_melee_class"] = { label = "PvP e alvo Guerreiro/Ladino",
+P["pvp_target_melee_class"] = { label = L.pred_pvp_target_melee,
     fn = function(env)
         if not (env.isPvP and env.hasActiveEnemy) then return false end
         local _, cls = UnitClass("target")
         return (cls == "WARRIOR" or cls == "ROGUE") and true or false
     end }
-P["no_viper_sting"]    = { label = "sem Viper Sting no alvo",
+P["no_viper_sting"]    = { label = L.pred_no_viper,
     fn = function(env) return not SpellFlashAddon.CheckDebuff(SpellName(3034), "target", true) and true or false end }
-P["no_scorpid_sting"]  = { label = "sem Scorpid Sting no alvo",
+P["no_scorpid_sting"]  = { label = L.pred_no_scorpid,
     fn = function(env) return not SpellFlashAddon.CheckDebuff(SpellName(3043), "target", true) and true or false end }
-P["viper_pvp_mana"]    = { label = "PvP, alvo com mana e sem Viper Sting",
+P["viper_pvp_mana"]    = { label = L.pred_pvp_viper,
     fn = function(env)
         if not P["pvp_target_mana"].fn(env) then return false end
         return not SpellFlashAddon.CheckDebuff(SpellName(3034), "target", true) and true or false
     end }
-P["scorpid_pvp_melee"] = { label = "PvP, alvo Guerreiro/Ladino e sem Scorpid Sting",
+P["scorpid_pvp_melee"] = { label = L.pred_pvp_scorpid,
     fn = function(env)
         if not P["pvp_target_melee_class"].fn(env) then return false end
         return not SpellFlashAddon.CheckDebuff(SpellName(3043), "target", true) and true or false
     end }
-P["no_serpent_sting"]  = { label = "sem Serpent Sting ativo (alvo atacável, fora do melee)",
+P["no_serpent_sting"]  = { label = L.pred_no_serpent,
     fn = function(env)
         return env.hasActiveEnemy and not env.isMelee and not (AddonTable.IsStung and AddonTable.IsStung("target")) and true or false
     end }
-P["no_any_sting"]      = { label = "sem sting ativo no alvo",
+P["no_any_sting"]      = { label = L.pred_no_any_sting,
     fn = function(env)
         if not (env.hasActiveEnemy and not env.tooCloseForRanged) then return false end
         if AddonTable.IsSerpentStingActive and AddonTable.IsSerpentStingActive("target") then return false end
@@ -639,36 +639,36 @@ P["no_any_sting"]      = { label = "sem sting ativo no alvo",
         if SpellFlashAddon.CheckDebuff(SpellName(3043), "target", true) then return false end
         return true
     end }
-P["melee_or_close"]    = { label = "em melee/dead zone",
+P["melee_or_close"]    = { label = L.pred_melee_dead_zone,
     fn = function(env) return (env.tooCloseForRanged or env.isMelee) and true or false end }
-P["dead_zone_not_melee"] = { label = "na dead zone e fora de melee",
+P["dead_zone_not_melee"] = { label = L.pred_dead_zone_not_melee,
     fn = function(env) return env.tooCloseForRanged and not env.isMelee and true or false end }
-P["pvp_not_clipped_melee"] = { label = "melee/dead zone, PvP e alvo sem Wing Clip",
+P["pvp_not_clipped_melee"] = { label = L.pred_pvp_no_clip,
     fn = function(env)
         if not (env.tooCloseForRanged or env.isMelee) then return false end
         if not env.isPvP then return false end
         return not (AddonTable.IsClipped and AddonTable.IsClipped("target")) and true or false
     end }
-P["melee_enemy_interruptible"] = { label = "melee com alvo atacável e conjurando",
+P["melee_enemy_interruptible"] = { label = L.pred_melee_interruptible,
     fn = function(env)
         if not (env.isMelee and env.hasActiveEnemy) then return false end
         return AddonTable.IsTargetInterruptibleCasting and AddonTable.IsTargetInterruptibleCasting("target") and true or false
     end }
-P["within_8_aoe"]      = { label = "ao alcance (≤ 8 jd) em AoE",
+P["within_8_aoe"]      = { label = L.pred_within_8_aoe,
     fn = function(env) return env.targetDistance and env.targetDistance <= 8 and env.hasActiveEnemy and env.isAoE end }
-P["within_8_st"]       = { label = "ao alcance (≤ 8 jd) em alvo único",
+P["within_8_st"]       = { label = L.pred_within_8_st,
     fn = function(env) return env.targetDistance and env.targetDistance <= 8 and env.hasActiveEnemy and not env.isAoE end }
-P["no_serpent_pve"]    = { label = "PvE, sem Serpent Sting ativo, fora do melee",
+P["no_serpent_pve"]    = { label = L.pred_pve_no_serpent,
     fn = function(env)
         if not (env.hasActiveEnemy and not env.isMelee and not env.isPvP) then return false end
         return not (AddonTable.IsStung and AddonTable.IsStung("target")) and true or false
     end }
-P["no_serpent_mm"]     = { label = "sem Serpent Sting ativo (via crença), fora do melee",
+P["no_serpent_mm"]     = { label = L.pred_no_serpent_belief,
     fn = function(env)
         if not (env.hasActiveEnemy and not env.isMelee) then return false end
         return not (AddonTable.IsSerpentStingActive and AddonTable.IsSerpentStingActive("target")) and true or false
     end }
-P["pvp_hp30"]          = { label = "PvP e você abaixo de 30%",
+P["pvp_hp30"]          = { label = L.pred_pvp_hp30,
     fn = function(env)
         if not env.isPvP then return false end
         local hp = env.myHP or 100

@@ -6,14 +6,14 @@
 -- FB 22568, etc.). O Flashable() silencia qualquer ID errado — nunca quebra nada.
 
 local AddonName, AddonTable = ...
-local L = AddonTable.Localize
+local L = AddonTable.L
 local SFBF = _G["SpellFlashForever"]
 
 AddonTable.Castable = AddonTable.Castable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.Castable)) or {}
 AddonTable.VehicleCastable = AddonTable.VehicleCastable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.VehicleCastable)) or {}
 AddonTable.ItemCastable = AddonTable.ItemCastable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.ItemCastable)) or {}
 
-print('|cFF00FF00[SF Druid]|r Functions carregado!')
+print(string.format(L.mod_loaded, "Druid", L.mod_load_functions))
 
 local function SpellName(id) return AddonTable.SpellName(id) end
 local Buff = SpellFlashAddon.CheckBuff
@@ -284,23 +284,23 @@ end
 -- =====================================================
 AddonTable.RotationPredicates = AddonTable.RotationPredicates or {}
 local P = AddonTable.RotationPredicates
-P["always"]          = { label = "sempre", fn = function(env) return true end }
-P["has_enemy"]       = { label = "alvo atacável", fn = function(env) return env.hasActiveEnemy and true or false end }
-P["not_cat_form"]    = { label = "você NÃO está em forma de animal (Cat Form)", fn = function(env) return env.form == 0 and true or false end }
-P["bear_form"]       = { label = "você está em Bear Form", fn = function(env) return env.form == 2 and true or false end }
-P["mark_missing"]    = { label = "Mark of the Wild ausente (caster/Moonkin, não montado)",
+P["always"]          = { label = L.pred_always, fn = function(env) return true end }
+P["has_enemy"]       = { label = L.pred_has_enemy, fn = function(env) return env.hasActiveEnemy and true or false end }
+P["not_cat_form"]    = { label = L.pred_not_cat_form, fn = function(env) return env.form == 0 and true or false end }
+P["bear_form"]       = { label = L.pred_bear_form, fn = function(env) return env.form == 2 and true or false end }
+P["mark_missing"]    = { label = L.pred_mark_missing,
     fn = function(env)
         if env.form == 1 or env.form == 2 then return false end -- não pode em Cat/Bear
         if env.mounted then return false end                     -- não sugere montado
         return (AddonTable.IsSelfMarkUp and AddonTable.IsSelfMarkUp() or false) == false
     end }
-P["thorns_missing"]  = { label = "Thorns ausente (caster/Moonkin, não montado)",
+P["thorns_missing"]  = { label = L.pred_thorns_missing,
     fn = function(env)
         if env.form == 1 or env.form == 2 then return false end -- não pode em Cat/Bear
         if env.mounted then return false end                     -- não sugere montado
         return (AddonTable.IsSelfThornsUp and AddonTable.IsSelfThornsUp() or false) == false
     end }
-P["enred_missing"]  = { label = "Nature's Grasp / Enredamento ausente (não montado)",
+P["enred_missing"]  = { label = L.pred_natures_grasp_missing,
     fn = function(env)
         if env.mounted then return false end                     -- não sugere montado
         return (AddonTable.IsSelfEnredUp and AddonTable.IsSelfEnredUp() or false) == false
@@ -319,14 +319,14 @@ function AddonTable.ConcatCommonNodes(common, nodes)
     for _, n in ipairs(nodes or {}) do out[#out + 1] = n end
     return out
 end
-P["not_moonkin"]     = { label = "você NÃO está em Moonkin Form", fn = function(env) return env.form ~= 3 and true or false end }
-P["target_casting"]  = { label = "alvo conjurando", fn = function(env) return env.targetCasting and true or false end }
-P["pounce_condition"] = { label = "Cat Form, 40+ de energia, PvE",
+P["not_moonkin"]     = { label = L.pred_not_moonkin, fn = function(env) return env.form ~= 3 and true or false end }
+P["target_casting"]  = { label = L.pred_target_casting, fn = function(env) return env.targetCasting and true or false end }
+P["pounce_condition"] = { label = L.pred_cat_form_combo,
     fn = function(env) return env.form == 1 and (env.energy or 0) >= 40 and not env.isPvP and true or false end }
-P["combo5"]          = { label = "5 pontos de combo", fn = function(env) return (env.combo or 0) >= 5 end }
-P["energy40"]        = { label = "40+ de energia", fn = function(env) return (env.energy or 0) >= 40 end }
-P["my_hp35"]         = { label = "você abaixo de 35%", fn = function(env) return (env.myHP or 100) < 35 end }
-P["insect_swarm_missing"] = { label = "Insect Swarm ausente no alvo",
+P["combo5"]          = { label = L.pred_combo5, fn = function(env) return (env.combo or 0) >= 5 end }
+P["energy40"]        = { label = L.pred_energy40, fn = function(env) return (env.energy or 0) >= 40 end }
+P["my_hp35"]         = { label = L.pred_my_hp35, fn = function(env) return (env.myHP or 100) < 35 end }
+P["insect_swarm_missing"] = { label = L.pred_insect_swarm_missing,
     fn = function(env) return not SpellFlashAddon.CheckDebuff(SpellName(912), "target") and true or false end }
-P["moonfire_missing"] = { label = "Moonfire ausente no alvo",
+P["moonfire_missing"] = { label = L.pred_moonfire_missing,
     fn = function(env) return not SpellFlashAddon.CheckDebuff(SpellName(9835), "target") and true or false end }

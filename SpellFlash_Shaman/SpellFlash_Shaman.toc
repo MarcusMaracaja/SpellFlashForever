@@ -1,9 +1,9 @@
 ###############################################################################
 ## Interface: 16001
 ## Title: SpellFlash Forever: Shaman
-## Notes: Sugestões de magias/habilidades para Shaman Elemental e Enhancement. WoW Forever (Interface 16001). Foco em Elemental; Enhancement em melhor esforço.
+## Notes: Elemental and Enhancement rotation assistant for WoW Forever. Elemental focus; Enhancement best-effort. | Assistente de rotação Shaman (Elemental e Enhancement) para o WoW Forever. Foco em Elemental; Enhancement em melhor esforço.
 ## Author: Marcus (SpellFlash original: SF Community)
-## Version: 2.5.0-forever
+## Version: 1.6.0
 ## X-Category: Damage rotations
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## DefaultState: Enabled

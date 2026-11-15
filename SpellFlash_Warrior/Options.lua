@@ -2,6 +2,7 @@
 -- Registro da aba "Warrior" na GUI /sf (mesmo padrão da aba Hunter).
 local AddonName, AddonTable = ...
 local SFBF = _G["SpellFlashForever"]
+local L = (SFBF and SFBF.L) or setmetatable({}, { __index = function(_, k) return k end })
 
 local function GetModuleOff()
     if not (SFBF and SFBF.GetModuleConfig) then return false end
@@ -49,7 +50,7 @@ local function BuildWarriorTab(parent)
     desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
     desc:SetWidth(420)
     desc:SetJustifyH("LEFT")
-    desc:SetText("Controle a rotação do Warrior: se desligado, o módulo deixa de sugerir habilidades (as sugestões gerais continuam em Geral).")
+    desc:SetText(string.format(L.mod_desc_abilities, "Warrior"))
 
     local cb = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
     cb:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -16)
@@ -58,7 +59,7 @@ local function BuildWarriorTab(parent)
     local fs = parent:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
     fs:SetPoint("LEFT", cb, "RIGHT", 4, 0)
     fs:SetJustifyH("LEFT")
-    fs:SetText("Ativar sugestões de rotação do Warrior")
+    fs:SetText(string.format(L.mod_toggle, "Warrior"))
     cb.label = fs
     cb:SetChecked(not GetModuleOff())
     cb:SetScript("OnClick", function(self)
@@ -69,11 +70,11 @@ local function BuildWarriorTab(parent)
     hint:SetPoint("TOPLEFT", cb, "BOTTOMLEFT", 0, -12)
     hint:SetWidth(420)
     hint:SetJustifyH("LEFT")
-    hint:SetText("Desligar acima equivale a 'spell_flashing_off' só para este módulo.")
+    hint:SetText(L.mod_toggle_hint)
 
     local specTitle = parent:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     specTitle:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -18)
-    specTitle:SetText("Forçar rotação (senão, detecta automaticamente):")
+    specTitle:SetText(L.mod_spec_title)
 
     local specBoxes = {}
     local function SetSpecExclusive(target)
@@ -90,18 +91,18 @@ local function BuildWarriorTab(parent)
         end
     end
 
-    specBoxes["ARMS"] = CreateCheck(parent, specTitle, -8, "Arms (arms PvE)",
+    specBoxes["ARMS"] = CreateCheck(parent, specTitle, -8, L.spec_arms,
         function() return GetSpecOverride() == "ARMS" end, SetSpecExclusive("ARMS"))
-    specBoxes["FURY"] = CreateCheck(parent, specBoxes["ARMS"], -8, "Fury (two-hand / dual)",
+    specBoxes["FURY"] = CreateCheck(parent, specBoxes["ARMS"], -8, L.spec_fury2h,
         function() return GetSpecOverride() == "FURY" end, SetSpecExclusive("FURY"))
-    specBoxes["PROT"] = CreateCheck(parent, specBoxes["FURY"], -8, "Protection (tank)",
+    specBoxes["PROT"] = CreateCheck(parent, specBoxes["FURY"], -8, L.spec_prot,
         function() return GetSpecOverride() == "PROT" end, SetSpecExclusive("PROT"))
 
     local specHint = parent:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     specHint:SetPoint("TOPLEFT", specBoxes["PROT"], "BOTTOMLEFT", 0, -12)
     specHint:SetWidth(420)
     specHint:SetJustifyH("LEFT")
-    specHint:SetText("Use se a rotação não estiver sendo reconhecida em combate. Se nenhuma estiver marcada, o Warrior detecta a spec sozinho (C_Traits por árvore).")
+    specHint:SetText(L.mod_warrior_spec_hint)
 
     -- Editor de rotação (Modelo A: cards) — dentro da aba da classe, por personagem
     if SFBF and type(SFBF.BuildRotationEditor) == "function" then
@@ -112,7 +113,7 @@ end
 if SFBF and type(SFBF.RegisterConfigTab) == "function" then
     SFBF.RegisterConfigTab("warrior", "Warrior", BuildWarriorTab, "WARRIOR")
 else
-    print("|cffff9900[SF Warrior]|r SpellFlashForever não disponível para registrar a aba Warrior.")
+    print(string.format(L.mod_not_available, "Warrior", "Warrior"))
 end
 
-print("|cFF00FF00[SF Warrior]|r Options carregado!")
+print(string.format(L.mod_loaded, "Warrior", L.mod_load_options))

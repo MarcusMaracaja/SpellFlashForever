@@ -9,7 +9,7 @@ _G.SpellFlash_Paladin = AddonTable
 if not AddonTable.ShouldUseRacial then AddonTable.ShouldUseRacial = function() return nil end end
 if not AddonTable.ShouldUseTrinket then AddonTable.ShouldUseTrinket = function() return nil end end
 
-local L = AddonTable.Localize
+local L = AddonTable.L
 local SpellFlashAddon = SpellFlashAddon
 
 local TREE_HINTS_PALADIN = {
@@ -156,14 +156,14 @@ SpellFlashAddon.Spam[AddonName] = function(x)
     elseif SpellFlashAddon.IsSpellKnown and SpellFlashAddon.IsSpellKnown(680) then
         isProt, isRet, isHoly, specSource = false, true, false, "Ret(Holy Strike 680)"
     else
-        isProt, isRet, isHoly, specSource = false, true, false, "padrão Retribution" end
+        isProt, isRet, isHoly, specSource = false, true, false, L.dbg_default_spec .. " Retribution" end
 
     if not AddonTable.SpecMessageSent then
         local msg = "|cFF00FF00[SF Paladin]|r "
         if isProt then
-            print(msg.."|cFFFFD700Protection:|r Baluarte da Luz — sua muralha não cairá!")
+            print(msg .. L.bless_prot_pal)
         elseif isRet then
-            print(msg.."|cFFFF8000Retribution:|r Pela Luz — cada golpe é um julgamento!")
+            print(msg .. L.bless_ret)
         else
             print(msg.."|cFF00BFFFHoly:|r spec Holy não suportada por esta rotação; use /sf > Paladin para forçar PROT ou RET.")
         end
@@ -208,9 +208,9 @@ end
 SLASH_SFPALADINTREES1 = "/sftreesp"
 SlashCmdList["SFPALADINTREES"] = function()
     local function P(m) DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Paladin Trees]|r " .. tostring(m)) end
-    if not (C_ClassTalents and C_Traits) then P("C_ClassTalents/C_Traits ausentes") return end
+    if not (C_ClassTalents and C_Traits) then P(L.dbg_traits_absent) return end
     local r = SpellFlashAddon.CountTalentTreePoints and SpellFlashAddon.CountTalentTreePoints(TREE_HINTS_PALADIN)
-    if not r then P("Contagem indisponível") return end
+    if not r then P(L.dbg_count_na) return end
     for i, name in ipairs(r.names or {}) do
         P(tostring(i) .. ": " .. tostring(name))
     end

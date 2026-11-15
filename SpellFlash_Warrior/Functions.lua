@@ -5,14 +5,14 @@
 -- ficam os Castables e isShieldEquipped/currentStance do Warrior.
 
 local AddonName, AddonTable = ...
-local L = AddonTable.Localize
+local L = AddonTable.L
 local SFBF = _G["SpellFlashForever"]
 
 AddonTable.Castable = AddonTable.Castable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.Castable)) or {}
 AddonTable.VehicleCastable = AddonTable.VehicleCastable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.VehicleCastable)) or {}
 AddonTable.ItemCastable = AddonTable.ItemCastable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.ItemCastable)) or {}
 
-print('|cFF00FF00[SF Warrior]|r Functions carregado!')
+print(string.format(L.mod_loaded, "Warrior", L.mod_load_functions))
 
 local function SpellName(id) return AddonTable.SpellName(id) end
 local Buff = SpellFlashAddon.CheckBuff
@@ -330,55 +330,55 @@ end
 -- =====================================================
 AddonTable.RotationPredicates = AddonTable.RotationPredicates or {}
 local P = AddonTable.RotationPredicates
-P["always"]        = { label = "sempre", fn = function(env) return true end }
-P["has_enemy"]     = { label = "alvo atacável", fn = function(env) return env.hasActiveEnemy and true or false end }
-P["in_combat"]     = { label = "em combate", fn = function(env) return env.inCombat and true or false end }
-P["not_in_combat"] = { label = "fora de combate", fn = function(env) return not env.inCombat and true or false end }
+P["always"]        = { label = L.pred_always, fn = function(env) return true end }
+P["has_enemy"]     = { label = L.pred_has_enemy, fn = function(env) return env.hasActiveEnemy and true or false end }
+P["in_combat"]     = { label = L.pred_in_combat, fn = function(env) return env.inCombat and true or false end }
+P["not_in_combat"] = { label = L.pred_out_combat, fn = function(env) return not env.inCombat and true or false end }
 P["is_pvp"]        = { label = "PvP", fn = function(env) return env.isPvP and true or false end }
-P["pvp_and_enemy"] = { label = "PvP com alvo atacável", fn = function(env) return env.isPvP and env.hasActiveEnemy and true or false end }
-P["is_aoe"]        = { label = "AoE (2+ inimigos)", fn = function(env) return env.isAoE and true or false end }
-P["aoe_and_enemy"] = { label = "AoE com alvo atacável", fn = function(env) return env.isAoE and env.hasActiveEnemy and true or false end }
-P["target_casting"] = { label = "alvo conjurando", fn = function(env) return env.targetCasting and true or false end }
-P["target_casting_not_berserker"] = { label = "alvo conjurando e você NÃO está em Berserker Stance (3)",
+P["pvp_and_enemy"] = { label = L.pred_pvp_attackable, fn = function(env) return env.isPvP and env.hasActiveEnemy and true or false end }
+P["is_aoe"]        = { label = L.pred_aoe2, fn = function(env) return env.isAoE and true or false end }
+P["aoe_and_enemy"] = { label = L.pred_aoe_and_enemy, fn = function(env) return env.isAoE and env.hasActiveEnemy and true or false end }
+P["target_casting"] = { label = L.pred_target_casting, fn = function(env) return env.targetCasting and true or false end }
+P["target_casting_not_berserker"] = { label = L.pred_cast_not_berserker,
     fn = function(env) return env.targetCasting and env.currentStance ~= 3 and true or false end }
-P["target_casting_berserker"] = { label = "alvo conjurando e você está em Berserker Stance (3)",
+P["target_casting_berserker"] = { label = L.pred_cast_berserker,
     fn = function(env) return env.targetCasting and env.currentStance == 3 and true or false end }
-P["target_casting_defensive"] = { label = "alvo conjurando e você está em Defensive Stance (2)",
+P["target_casting_defensive"] = { label = L.pred_cast_defensive,
     fn = function(env) return env.targetCasting and env.currentStance == 2 and true or false end }
-P["target_casting_and_shield"] = { label = "alvo conjurando e você com escudo",
+P["target_casting_and_shield"] = { label = L.pred_cast_shield,
     fn = function(env) return env.targetCasting and env.hasShield and true or false end }
-P["not_stance_berserker"] = { label = "você NÃO está em Berserker Stance (3)",
+P["not_stance_berserker"] = { label = L.pred_not_berserker,
     fn = function(env) return env.currentStance ~= 3 and true or false end }
-P["not_battle_stance_away"] = { label = "fora de combate e você NÃO está em Battle Stance (1)",
+P["not_battle_stance_away"] = { label = L.pred_out_battle_stance,
     fn = function(env) return (not env.inCombat) and env.currentStance ~= 1 and true or false end }
-P["target_hp20"]   = { label = "alvo abaixo de 20%", fn = function(env) return (env.targetHP or 100) < 20 end }
-P["my_hp35"]       = { label = "você abaixo de 35%", fn = function(env) return (env.myHP or 100) < 35 end }
-P["rage40"]        = { label = "rage acima de 40", fn = function(env) return (env.rage or 0) >= 40 end }
-P["rage40_and_enemy"] = { label = "rage acima de 40 e alvo atacável",
+P["target_hp20"]   = { label = L.pred_target_hp20, fn = function(env) return (env.targetHP or 100) < 20 end }
+P["my_hp35"]       = { label = L.pred_my_hp35, fn = function(env) return (env.myHP or 100) < 35 end }
+P["rage40"]        = { label = L.pred_rage40, fn = function(env) return (env.rage or 0) >= 40 end }
+P["rage40_and_enemy"] = { label = L.pred_rage_enemy,
     fn = function(env) return (env.rage or 0) >= 40 and env.hasActiveEnemy and true or false end }
-P["has_shield"]    = { label = "com escudo e alvo atacável",
+P["has_shield"]    = { label = L.pred_shield_attackable,
     fn = function(env) return env.hasShield and env.hasActiveEnemy and true or false end }
-P["has_shield_only"] = { label = "com escudo", fn = function(env) return env.hasShield and true or false end }
-P["opener_stance"] = { label = "fora de combate, alvo atacável e você NÃO está em Battle Stance (1)",
+P["has_shield_only"] = { label = L.pred_shield, fn = function(env) return env.hasShield and true or false end }
+P["opener_stance"] = { label = L.pred_out_attackable_battle,
     fn = function(env) return (not env.inCombat) and env.hasActiveEnemy and env.currentStance ~= 1 and true or false end }
-P["opener_charge"] = { label = "fora de combate e alvo atacável",
+P["opener_charge"] = { label = L.pred_out_attackable,
     fn = function(env) return (not env.inCombat) and env.hasActiveEnemy and true or false end }
-P["not_in_combat_shout_missing"] = { label = "fora de combate e sem Battle Shout",
+P["not_in_combat_shout_missing"] = { label = L.pred_out_shout,
     fn = function(env)
         if env.inCombat then return false end
         return not (SpellFlashAddon.CheckBuff and SpellFlashAddon.CheckBuff(6673, "player")) and true or false
     end }
 
 -- Postura certa (pós-Tactical Mastery baseline do Forever: trocar de postura é barato)
-P["not_berserker_combat"] = { label = "em combate e você NÃO está em Berserker Stance (3)",
+P["not_berserker_combat"] = { label = L.pred_combat_not_berserker,
     fn = function(env) return env.inCombat and env.currentStance ~= 3 and true or false end }
-P["not_defensive_stance"] = { label = "você NÃO está em Defensive Stance (2)",
+P["not_defensive_stance"] = { label = L.pred_not_defensive,
     fn = function(env) return env.currentStance ~= 2 and true or false end }
 
 -- AoE com Rage suficiente para os commits caros (pooling)
-P["aoe_rage40_and_enemy"] = { label = "AoE, rage acima de 40 e alvo atacável",
+P["aoe_rage40_and_enemy"] = { label = L.pred_aoe_rage40,
     fn = function(env) return env.isAoE and (env.rage or 0) >= 40 and env.hasActiveEnemy and true or false end }
-P["aoe_rage45_and_enemy"] = { label = "AoE, rage acima de 45 e alvo atacável",
+P["aoe_rage45_and_enemy"] = { label = L.pred_aoe_rage45,
     fn = function(env) return env.isAoE and (env.rage or 0) >= 45 and env.hasActiveEnemy and true or false end }
 
 -- =====================================================

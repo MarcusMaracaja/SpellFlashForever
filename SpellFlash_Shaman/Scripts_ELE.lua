@@ -16,6 +16,7 @@
 --   Clearcasting 16246). Ver PESQUISA_ROTACAO_FOREVER.md.
 
 local AddonName, AddonTable = ...
+local L = AddonTable.L
 AddonTable.RotationModuleName = AddonName
 AddonTable.RotationPredicates = AddonTable.RotationPredicates or {}
 AddonTable.RotationSpecs = AddonTable.RotationSpecs or {}
@@ -52,32 +53,32 @@ end
 
 local P = AddonTable.RotationPredicates
 
-P["always"]             = { label = "sempre", fn = function(env) return true end }
-P["is_moving"]          = { label = "em movimento", fn = function(env) return IsMoving() end }
-P["in_combat"]          = { label = "em combate", fn = function(env) return env.inCombat and true or false end }
-P["aoe"]                = { label = "AoE (2+ inimigos)", fn = function(env) return env.isAoE and true or false end }
-P["not_aoe"]            = { label = "alvo único", fn = function(env) return not env.isAoE and true or false end }
-P["has_enemy"]          = { label = "alvo atacável", fn = function(env) return env.hasActiveEnemy and true or false end }
-P["mana_above15"]       = { label = "mana acima de 15%", fn = function(env) return (env.manaPct or 0) > 15 end }
-P["mana_above40"]       = { label = "mana acima de 40%", fn = function(env) return (env.manaPct or 0) > 40 end }
-P["ranged"]             = { label = "fora de alcance melee", fn = function(env) return not env.tooCloseForRanged and true or false end }
-P["flame_shock_missing"] = { label = "Flame Shock ausente (alvo atacável, mana ok)",
+P["always"]             = { label = L.pred_always, fn = function(env) return true end }
+P["is_moving"]          = { label = L.pred_moving, fn = function(env) return IsMoving() end }
+P["in_combat"]          = { label = L.pred_in_combat, fn = function(env) return env.inCombat and true or false end }
+P["aoe"]                = { label = L.pred_aoe2, fn = function(env) return env.isAoE and true or false end }
+P["not_aoe"]            = { label = L.pred_single_target, fn = function(env) return not env.isAoE and true or false end }
+P["has_enemy"]          = { label = L.pred_has_enemy, fn = function(env) return env.hasActiveEnemy and true or false end }
+P["mana_above15"]       = { label = L.pred_mana15, fn = function(env) return (env.manaPct or 0) > 15 end }
+P["mana_above40"]       = { label = L.pred_mana40, fn = function(env) return (env.manaPct or 0) > 40 end }
+P["ranged"]             = { label = L.pred_ranged_melee_out, fn = function(env) return not env.tooCloseForRanged and true or false end }
+P["flame_shock_missing"] = { label = L.pred_flame_shock,
     fn = function(env)
         return env.hasActiveEnemy and (env.manaPct or 0) > 15 and not AddonTable.IsFlameShockUp("target")
     end }
-P["aoe_fire_totem_up"]  = { label = "AoE com totem de fogo ativo",
+P["aoe_fire_totem_up"]  = { label = L.pred_fire_totem_aoe,
     fn = function(env)
         return env.isAoE and (env.manaPct or 0) > 15 and FireTotemUp()
     end }
-P["aoe_fire_totem_missing"] = { label = "AoE e falta totem de fogo (Magma)",
+P["aoe_fire_totem_missing"] = { label = L.pred_fire_totem_magma,
     fn = function(env)
         return env.isAoE and not (AddonTable.IsTotemActiveByName and AddonTable.IsTotemActiveByName(SpellName(8190)))
     end }
-P["st_fire_totem_missing"] = { label = "alvo único e falta totem de fogo (Searing)",
+P["st_fire_totem_missing"] = { label = L.pred_fire_totem_searing,
     fn = function(env)
         return not env.isAoE and not (AddonTable.IsTotemActiveByName and AddonTable.IsTotemActiveByName(SpellName(3599)))
     end }
-P["mana_spring_missing"] = { label = "Mana Spring ausente (luta longa ou mana < 50%)",
+P["mana_spring_missing"] = { label = L.pred_mana_spring,
     fn = function(env)
         if not AddonTable.IsTotemActiveByName then return false end
         if AddonTable.IsTotemActiveByName(SpellName(5675)) then return false end

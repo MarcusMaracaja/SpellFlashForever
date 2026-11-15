@@ -13,6 +13,7 @@
 -- O editor de rotação do /sf (aba Shaman) edita esta declaração por personagem.
 
 local AddonName, AddonTable = ...
+local L = AddonTable.L
 AddonTable.RotationModuleName = AddonName
 AddonTable.RotationPredicates = AddonTable.RotationPredicates or {}
 AddonTable.RotationSpecs = AddonTable.RotationSpecs or {}
@@ -42,11 +43,11 @@ end
 
 local P = AddonTable.RotationPredicates
 -- condições reutilizadas do ELE (mesmo arquivo não; mas podem já existir):
-P["aoe_mana15"] = { label = "AoE e mana acima de 15%",
+P["aoe_mana15"] = { label = L.pred_aoe_mana15,
     fn = function(env) return env.isAoE and (env.manaPct or 0) > 15 end }
-P["maelstrom5"]  = { label = "Maelstrom Weapon com 5 pilhas",
+P["maelstrom5"]  = { label = L.pred_maelstrom5,
     fn = function(env) return GetMaelstromStacks() >= 5 end }
-P["not_melee"]   = { label = "fora de alcance melee",
+P["not_melee"]   = { label = L.pred_ranged_melee_out,
     fn = function(env) return not env.isMelee and true or false end }
 
 AddonTable.RotationSpecs.ENH = {

@@ -1,49 +1,50 @@
 -- SpellFlashForever / RacialHandler.lua
--- Sistema racial/trinket para TODAS as classes do Forever (detec��o, situa��es de
--- CC/vida baixa/burst, sugest�o de racial). Movido do SpellFlash_Hunter para o core.
+-- Sistema racial/trinket para TODAS as classes do Forever (detecção, situações de
+-- CC/vida baixa/burst, sugestão de racial). Movido do SpellFlash_Hunter para o core.
 local s = _G["SpellFlashForever"]
 if not s then return end
+local L = s.L
 local Debug = false
 
 local RacialData = {
     Human = {
-        name = "Humano",
-        greeting = "Você é um Humano, defensor de Stormwind. Cada homem por si!",
+        name = L.race_human,
+        greeting = L.race_greet_human,
         activeRacial = { id = 59752, name = "Every Man for Himself", situations = { stun = true, burst = true, damageSpike = true } }
     },
     Dwarf = {
-        name = "Anão",
-        greeting = "Você é um Anão de Dun Morogh. Sua Pele de Pedra é sua fortaleza!",
+        name = L.race_dwarf,
+        greeting = L.race_greet_dwarf,
         activeRacial = { id = 20594, name = "Stoneform", situations = { damageSpike = true, lowHp = true, burst = true } }
     },
     NightElf = {
-        name = "Elfo Noturno",
-        greeting = "Você é um Elfo Noturno, amante das sombras. Mesclà-se à noite!",
+        name = L.race_nightelf,
+        greeting = L.race_greet_nightelf,
         activeRacial = { id = 20580, name = "Shadowmeld", situations = { dodgeOrReset = true, enemyCasting = true, lowHp = true } }
     },
     Gnome = {
-        name = "Gnomo",
-        greeting = "Você é um Gnomo de Gnomecan. Artista da Fuga, liberte-se das amarras!",
+        name = L.race_gnome,
+        greeting = L.race_greet_gnome,
         activeRacial = { id = 20589, name = "Escape Artist", situations = { root = true, burst = true, dodgeOrReset = true } }
     },
     Orc = {
-        name = "Orc",
-        greeting = "Você é um Orc de Durotar. Fúria Sanguinária para a caça!",
+        name = L.race_orc,
+        greeting = L.race_greet_orc,
         activeRacial = { id = 20572, name = "Blood Fury", situations = { burst = true } }
     },
     Undead = {
-        name = "Morto-vivo",
-        greeting = "Você é um Morto-vivo, livre do Flagelo. Vontade dos Renegados!",
+        name = L.race_undead,
+        greeting = L.race_greet_undead,
         activeRacial = { id = 7744, name = "Will of the Forsaken", situations = { fear = true, charm = true, sleep = true } }
     },
     Tauren = {
-        name = "Tauren",
-        greeting = "Você é um Tauren de Mulgore. Golpe de Guerra para controlar!",
+        name = L.race_tauren,
+        greeting = L.race_greet_tauren,
         activeRacial = { id = 20549, name = "War Stomp", situations = { multiTarget = true, enemyCasting = true, lowHp = true } }
     },
     Troll = {
-        name = "Troll",
-        greeting = "Você é um Troll da tribo Darkspear. Berserking para abater!",
+        name = L.race_troll,
+        greeting = L.race_greet_troll,
         -- Forever usa IDs vanilla: Berserking = 20554 (verificado em warcraftmaps "In the game files", 11/nov)
         activeRacial = { id = 20554, name = "Berserking", situations = { lowHp = true, burst = true } }
     },
@@ -52,13 +53,13 @@ local RacialData = {
     --   Windshaper (Horde, CléRace 96):   Skysight (1259686) — +10% movement/mounted speed por 30s
     --   Walk on Air (Both, 1259416) — ambos ganham glide de 10 s (situational, não incluído por padrão)
     HighOrderSkyborne = {
-        name = "Skyborne (High Order)",
-        greeting = "Você é um Skyborne da Ordem Maior. A terra canta — leia as linhas ley!",
+        name = L.race_highorder,
+        greeting = L.race_greet_highorder,
         activeRacial = { id = 1259705, name = "Read Ley Line", situations = { lowHp = true, burst = true, damageSpike = true } }
     },
     WindshaperSkyborne = {
-        name = "Skyborne (Windshaper)",
-        greeting = "Você é um Skyborne Windshaper. O vento obedece aos seus pés!",
+        name = L.race_windshaper,
+        greeting = L.race_greet_windshaper,
         activeRacial = { id = 1259686, name = "Skysight", situations = { dodgeOrReset = true, damageSpike = true, burst = true, dodgeOrReset = true } }
     },
 }
@@ -118,7 +119,7 @@ local function DetectPlayerRace()
     end
     playerRace = "Unknown"
     playerRacial = nil
-    print("[SF Hunter] Raça não mapeada:", raceFileStr)
+    print(string.format(L.race_unmapped, raceFileStr))
 end
 
 DetectPlayerRace()
@@ -357,40 +358,40 @@ end
 SLASH_SFDRACIAL1 = "/sfdracial"
 SlashCmdList["SFDRACIAL"] = function()
     local function P(m) DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Racial]|r " .. tostring(m)) end
-    P("playerRace=" .. safeS(playerRace) .. " | racial=" .. safeS(playerRacial and playerRacial.id) .. " (" .. safeS(playerRacial and playerRacial.name) .. ")")
+    P(string.format(L.drc_race, safeS(playerRace), safeS(playerRacial and playerRacial.id), safeS(playerRacial and playerRacial.name)))
     if playerRacial and playerRacial.id then
         local spellId = playerRacial.id
         if C_SpellBook and type(C_SpellBook.IsSpellKnown) == "function" then
             local ok, known = pcall(C_SpellBook.IsSpellKnown, spellId)
-            P("IsSpellKnown -> ok=" .. tostring(ok) .. " known=" .. safeS(known))
+            P(string.format(L.drc_known_ok, tostring(ok), safeS(known)))
         else
-            P("C_SpellBook.IsSpellKnown AUSENTE")
+            P(L.drc_known_absent)
         end
         if C_Spell and type(C_Spell.GetSpellInfo) == "function" then
             local ok, info = pcall(C_Spell.GetSpellInfo, spellId)
-            P("GetSpellInfo -> ok=" .. tostring(ok) .. " nome=" .. safeS(ok and info and info.name))
+            P(string.format(L.drc_info, tostring(ok), safeS(ok and info and info.name)))
         end
         if C_Spell and type(C_Spell.GetSpellCooldown) == "function" then
             local ok, cd = pcall(C_Spell.GetSpellCooldown, spellId)
             if ok and type(cd) == "table" then
-                for k, v in pairs(cd) do P("  cd." .. safeS(k) .. " = " .. safeS(v)) end
+                for k, v in pairs(cd) do P(string.format(L.drc_cooldown_table, safeS(k), safeS(v))) end
             else
-                P("GetSpellCooldown -> ok=" .. tostring(ok))
+                P(string.format(L.drc_cooldown_ok, tostring(ok)))
             end
         end
         if C_Spell and type(C_Spell.IsSpellUsable) == "function" then
             local ok, usable, power = pcall(C_Spell.IsSpellUsable, spellId)
-            P("IsSpellUsable -> ok=" .. tostring(ok) .. " usable=" .. safeS(usable) .. " power=" .. safeS(power))
+            P(string.format(L.drc_usable, tostring(ok), safeS(usable), safeS(power)))
         end
-        P("SpellKnown() = " .. tostring(SpellKnown(spellId)))
-        P("RacialCooldownRemaining = " .. tostring(RacialCooldownRemaining(spellId)))
-        P("InCombat = " .. tostring(UnitAffectingCombat and UnitAffectingCombat("player")))
+        P(string.format(L.drc_spellknown, tostring(SpellKnown(spellId))))
+        P(string.format(L.drc_cooldown_remaining, tostring(RacialCooldownRemaining(spellId))))
+        P(string.format(L.drc_incombat, tostring(UnitAffectingCombat and UnitAffectingCombat("player"))))
         if UnitExists("target") then
             local okCUA, canAttack = pcall(UnitCanAttack, "player", "target")
-            P("UnitCanAttack -> ok=" .. tostring(okCUA) .. " canAttack=" .. safeS(canAttack))
+            P(string.format(L.drc_canattack, tostring(okCUA), safeS(canAttack)))
         else
-            P("sem alvo")
+            P(L.drc_no_target)
         end
-        P("ShouldUseRacial() = " .. safeS(s.ShouldUseRacial()))
+        P(string.format(L.drc_should, safeS(s.ShouldUseRacial())))
     end
 end

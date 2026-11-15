@@ -1,18 +1,21 @@
 -- SpellFlashForever / SharedFunctions.lua
--- Utilit�rios compartilhados por TODOS os m�dulos de classe (Hunter hoje; BM/MM e
--- qualquer implementa��o futura tamb�m). Stateless: sem frames, sem eventos, sem
--- estado por sess�o. Tudo fail-open com pcall + issecretvalue.
--- Conven��o: fun��es exportadas no mesmo facade de sempre (s = SpellFlashForever /
--- _G.SpellFlashAddon). Os m�dulos de classe delegam com AddonTable.X = SpellFlashAddon.X.
+-- Utilitários compartilhados por TODOS os módulos de classe (Hunter hoje; BM/MM e
+-- qualquer implementação futura também). Stateless: sem frames, sem eventos, sem
+-- estado por sessão. Tudo fail-open com pcall + issecretvalue.
+-- Convenção: funções exportadas no mesmo facade de sempre (s = SpellFlashForever /
+-- _G.SpellFlashAddon). Os módulos de classe delegam com AddonTable.X = SpellFlashAddon.X.
 
 local addonName = "SpellFlashForever"
 local s = _G[addonName]
 if not s then
     if DEFAULT_CHAT_FRAME then
-        DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF]|r SharedFunctions: tabela " .. tostring(addonName) .. " n�o encontrada.")
+        -- Locales.lua ainda não carregou aqui só se a TOC estiver quebrada;
+        -- mensagem mínima para depuração.
+        DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF]|r SharedFunctions: SpellFlashForever table missing.")
     end
     return
 end
+local L = s.L
 
 local IsSecret = _G.issecretvalue and function(v) return _G.issecretvalue(v) end or function() return false end
 local function StripParens(name)
@@ -21,7 +24,7 @@ local function StripParens(name)
 end
 
 -- ---------------------------------------------------------------------------
--- Nomes de feiti�os / itens + cache nome -> ID (substitui GetSpellInfo global).
+-- Nomes de feitiços / itens + cache nome -> ID (substitui GetSpellInfo global).
 -- ---------------------------------------------------------------------------
 s.SpellNameToID = s.SpellNameToID or {}
 
@@ -51,7 +54,7 @@ function s.ItemName(id)
 end
 
 -- ---------------------------------------------------------------------------
--- Rank de fam�lia: maior rank conhecido (varre da maior p/ menor).
+-- Rank de família: maior rank conhecido (varre da maior p/ menor).
 -- ---------------------------------------------------------------------------
 local function HighestKnownRank(ids)
     if C_SpellBook and type(C_SpellBook.IsSpellKnownOrInSpellBook) == "function" then
@@ -71,13 +74,13 @@ end
 s.HighestKnownRank = HighestKnownRank
 
 -- ---------------------------------------------------------------------------
--- Alcance f�sico e de barra de a��o (IsActionInRange do Forever: true/1/false/0,
--- nil, secret ? desconhecido). Wing Clip como sondan�a (Hunter; outras classes
+-- Alcance físico e de barra de ação (IsActionInRange do Forever: true/1/false/0,
+-- nil, secret ? desconhecido). Wing Clip como sondagem (Hunter; outras classes
 -- podem passar outra lista).
 -- ---------------------------------------------------------------------------
 local AUTO_ATTACK_ID = 6603
 local AUTO_SHOT_ID   = 75
-local WING_CLIP      = { 2974, 1310180, 14267, 14268 } -- inclui row de n�vel 12 do Forever
+local WING_CLIP      = { 2974, 1310180, 14267, 14268 } -- inclui row de nível 12 do Forever
 
 local function RangeAnswer(v)
     if v == nil then return nil end
@@ -102,7 +105,7 @@ local function ActionSlotRange(slot, unit)
 end
 s.ActionSlotRange = ActionSlotRange
 
--- Dist�ncia ao alvo em jardas (DF: UnitDistanceSquared, squared; exige checked=true)
+-- Distância ao alvo em jardas (DF: UnitDistanceSquared, squared; exige checked=true)
 function s.TargetDistance(unit)
     unit = unit or "target"
     if type(UnitDistanceSquared) ~= "function" then return nil end
@@ -116,8 +119,8 @@ function s.TargetDistance(unit)
 end
 
 -- true = melee; false = ranged; nil = desconhecido
--- Orbit: slot de "Atacar" ? sondan�a Wing Clip ? slot de "Tiro Autom�tico"
--- invertido ? (fora de combate) intera��o f�sica. Sem chute.
+-- Orbit: slot de "Atacar" -> sondagem Wing Clip -> slot de "Tiro Automático"
+-- invertido -> (fora de combate) interação física. Sem chute.
 function s.IsInMeleeRange(unit, probeRanks)
     unit = unit or "target"
     probeRanks = probeRanks or WING_CLIP
@@ -148,7 +151,7 @@ end
 
 -- ---------------------------------------------------------------------------
 -- Falha-segura de API de combate (subidas antigas do cliente):
--- CheckInteractDistance protegido em combate; UnitIsUnit secret em inst�ncias.
+-- CheckInteractDistance protegido em combate; UnitIsUnit secret em instâncias.
 -- ---------------------------------------------------------------------------
 function s.SafeInteractDistance(unit, dist)
     if type(InCombatLockdown) == "function" and InCombatLockdown() then return nil end
@@ -168,7 +171,7 @@ function s.SafeUnitIsUnit(a, b)
 end
 
 -- Substitutos modernos de GetNumPartyMembers/GetNumRaidMembers (removidos).
--- party = membros al�m de voc� (0-4); raid = total incluindo voc� (1-40).
+-- party = membros além de você (0-4); raid = total incluindo você (1-40).
 function s.GetNumPartyMembers()
     if type(IsInRaid) == "function" and IsInRaid() then return 0 end
     if type(GetNumGroupMembers) ~= "function" then return 0 end
@@ -190,7 +193,7 @@ function s.IsTargetEnemyPlayer(unit)
     return UnitIsPlayer(unit) and UnitCanAttack("player", unit)
 end
 
--- Alvo est� conjurando algo interromp�vel? (qualquer classe)
+-- Alvo está conjurando algo interrompível? (qualquer classe)
 function s.IsTargetInterruptibleCasting(unit)
     unit = unit or "target"
     local okCA, canAttack = pcall(UnitCanAttack, "player", unit)
@@ -212,8 +215,8 @@ function s.IsTargetInterruptibleCasting(unit)
     return false
 end
 
--- Alvo est� imune (lista de IDs de imunidade + CheckBuff, para qualquer classe;
--- se omitida, usa a lista padr�o: Ice Block, Divine Shield, Hand of Protection,
+-- Alvo está imune (lista de IDs de imunidade + CheckBuff, para qualquer classe;
+-- se omitida, usa a lista padrão: Ice Block, Divine Shield, Hand of Protection,
 -- Cyclone, Banish, Deterrence, Dispersion, Cloak of Shadows)
 local DEFAULT_IMMUNITIES = { 45438, 642, 1022, 33786, 710, 19263, 47585, 31224 }
 function s.IsTargetImmune(unit, immunities)
@@ -294,7 +297,7 @@ function s.CountTalentTreePoints(treeHints, ordinalFallback)
                 end
             end
             counts[spec] = (counts[spec] or 0) + total
-            names[i] = (type(treeName) == "string" and treeName) or "(sem nome)"
+            names[i] = (type(treeName) == "string" and treeName) or L.shared_unnamed
         end
         out = { counts = counts, names = names }
     end)

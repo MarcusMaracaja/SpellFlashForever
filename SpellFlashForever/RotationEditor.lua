@@ -18,24 +18,25 @@
 local addonName = "SpellFlashForever"
 local s = _G[addonName]
 if not s then return end
+local L = s.L
 
 -- ---------------------------------------------------------------------------
 -- Filtros finos: 6 eixos independentes (0 = "qualquer/ambos", sempre passa)
 -- ---------------------------------------------------------------------------
 
 local FILTER_AXES = {
-    { key = "combat",   label = "1. Combate",
-      options = { { 0, "ambos" }, { 1, "em combate" }, { 2, "fora de combate" } } },
-    { key = "env",      label = "2. Ambiente",
-      options = { { 0, "ambos" }, { 1, "PvE" }, { 2, "PvP" } } },
-    { key = "target",   label = "3. Alvo",
-      options = { { 0, "qualquer" }, { 1, "atacável" }, { 2, "conjurando" }, { 3, "sem alvo atacável" } } },
-    { key = "range",    label = "4. Alcance",
-      options = { { 0, "qualquer" }, { 1, "ranged (> dead zone)" }, { 2, "melee / dead zone" }, { 3, "na dead zone" } } },
-    { key = "resource", label = "5. Recurso",
-      options = { { 0, "qualquer" }, { 1, "mana > 15%" }, { 2, "mana > 40%" }, { 3, "mana > 50%" }, { 4, "rage >= 40" }, { 5, "energia >= 40" }, { 6, "combo >= 5" } } },
-    { key = "aoe",      label = "6. Área",
-      options = { { 0, "qualquer" }, { 1, "AoE (2+)" }, { 2, "alvo único" } } },
+    { key = "combat",   label = L.rot_axis_combat,
+      options = { { 0, L.axis_both }, { 1, L.axis_in_combat }, { 2, L.axis_out_combat } } },
+    { key = "env",      label = L.rot_axis_env,
+      options = { { 0, L.axis_both }, { 1, "PvE" }, { 2, "PvP" } } },
+    { key = "target",   label = L.rot_axis_target,
+      options = { { 0, L.axis_any }, { 1, L.axis_attackable }, { 2, L.axis_casting }, { 3, L.axis_no_attack } } },
+    { key = "range",    label = L.rot_axis_range,
+      options = { { 0, L.axis_any }, { 1, L.axis_ranged }, { 2, L.axis_melee }, { 3, L.axis_dead_zone } } },
+    { key = "resource", label = L.rot_axis_resource,
+      options = { { 0, L.axis_any }, { 1, L.axis_mana15 }, { 2, L.axis_mana40 }, { 3, L.axis_mana50 }, { 4, L.axis_rage40 }, { 5, L.axis_energy40 }, { 6, L.axis_combo5 } } },
+    { key = "aoe",      label = L.rot_axis_aoe,
+      options = { { 0, L.axis_any }, { 1, L.axis_aoe_2 }, { 2, L.axis_single } } },
 }
 
 local FILTER_EVALS = {
@@ -236,7 +237,7 @@ local function B64Decode(str)
     local out, buffer, bits = {}, 0, 0
     for i = 1, #str do
         local v = lut[str:sub(i, i)]
-        if v == nil then return nil, "caractere inválido: '" .. str:sub(i, i) .. "'" end
+        if v == nil then return nil, string.format(L.rot_bad_char, str:sub(i, i)) end
         buffer = buffer * 64 + v
         bits = bits + 6
         if bits >= 8 then
@@ -252,7 +253,7 @@ end
 function s.ExportRotationString(moduleAddon, moduleName, specKey)
     local specs = type(moduleAddon) == "table" and moduleAddon.RotationSpecs
     local spec = specs and specs[specKey]
-    if not spec then return nil, "spec desconhecido: " .. tostring(specKey) end
+    if not spec then return nil, string.format(L.rot_unknown_spec, tostring(specKey)) end
     local effective = GetEffective(spec, moduleName, specKey)
     local lines = { "SFR1", moduleName .. "|" .. specKey }
     for _, n in ipairs(effective) do
@@ -268,15 +269,15 @@ end
 function s.ImportRotationString(moduleAddon, moduleName, specKey, data)
     local raw = type(data) == "string" and (data:gsub("%s+", "")) or ""
     local payload = raw:match("^!SFROT%-1!(.+)$")
-    if not payload then return false, "prefixo !SFROT-1! não encontrado" end
+    if not payload then return false, L.rot_bad_prefix end
     local text, err = B64Decode(payload)
-    if not text then return false, "decodificação falhou: " .. tostring(err) end
+    if not text then return false, string.format(L.rot_decode_failed, tostring(err)) end
     local lines = {}
     for line in (text .. "\n"):gmatch("(.-)\n") do lines[#lines + 1] = line end
-    if #lines < 2 or lines[1] ~= "SFR1" then return false, "cabeçalho SFR1 não encontrado" end
+    if #lines < 2 or lines[1] ~= "SFR1" then return false, L.rot_no_header end
     local mName, mSpec = lines[2]:match("^([^|]+)|(.*)$")
-    if mName ~= moduleName then return false, "rotação é de outro módulo (" .. tostring(mName) .. ")" end
-    if mSpec ~= specKey then return false, "rotação é de outra spec (" .. tostring(mSpec) .. ")" end
+    if mName ~= moduleName then return false, string.format(L.rot_wrong_module, tostring(mName)) end
+    if mSpec ~= specKey then return false, string.format(L.rot_wrong_spec, tostring(mSpec)) end
 
     local specs = moduleAddon.RotationSpecs
     local spec = specs and specs[specKey]
@@ -301,13 +302,13 @@ function s.ImportRotationString(moduleAddon, moduleName, specKey, data)
             end
         end
     end
-    if #imported == 0 then return false, "nenhum nó reconhecido na string" end
+    if #imported == 0 then return false, L.rot_no_nodes end
 
     local db = CharDB()
     db.rotation[moduleName] = db.rotation[moduleName] or {}
     db.rotation[moduleName][specKey] = { v = 1, nodes = imported }
-    local msg = "Rotação importada (" .. #imported .. " nós"
-    if unknown > 0 then msg = msg .. "; " .. unknown .. " desconhecido(s) ignorado(s)" end
+    local msg = string.format(L.rot_imported, #imported)
+    if unknown > 0 then msg = msg .. string.format(L.rot_unknown_skipped, unknown) end
     return true, msg .. ")"
 end
 
@@ -331,8 +332,18 @@ local function SpellTexture(spellID)
     return nil
 end
 
+-- Nome EXIBIDO de um nó de rotação: prefere o nome localizado do spellID
+-- (cliente ptBR/en...) e só cai no `node.name` (inglês, dado) se não houver.
+local function NodeDisplayName(node, moduleAddon)
+    if moduleAddon and type(moduleAddon.SpellName) == "function" and node.spellID then
+        local ok, name = pcall(moduleAddon.SpellName, node.spellID)
+        if ok and type(name) == "string" and name ~= "" then return name end
+    end
+    return node.name
+end
+
 local function PredicateLabel(preds, key)
-    if not key or key == "" then return "sempre" end
+    if not key or key == "" then return L.pred_always end
     local p = preds[key]
     local label = (p and p.label) or key
     if #label > 28 then label = label:sub(1, 24) .. "..." end
@@ -343,7 +354,7 @@ local function NodeConditionText(node, preds)
     local parts = {}
     if node.condition and node.condition ~= "" then
         local p = preds and preds[node.condition]
-        parts[#parts + 1] = "Espec.: " .. ((p and p.label) or node.condition)
+        parts[#parts + 1] = L.rot_spec_prefix .. ((p and p.label) or node.condition)
     end
     if type(node.filter) == "table" then
         for _, axis in ipairs(FILTER_AXES) do
@@ -355,7 +366,7 @@ local function NodeConditionText(node, preds)
             end
         end
     end
-    if #parts == 0 then return "|cff888888- sem condicoes -|r" end
+    if #parts == 0 then return L.rot_no_condition end
     local text = table.concat(parts, ", ")
     if #text > 60 then text = text:sub(1, 57) .. "..." end
     return "|cffffcc00" .. text .. "|r"
@@ -381,7 +392,7 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
     local toggle = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     toggle:SetSize(300, 22)
     toggle:SetPoint("TOPLEFT", anchorFrame or parent, "BOTTOMLEFT", 0, -16)
-    toggle:SetText("Rotação personalizada +")
+    toggle:SetText(L.rot_custom_title .. " +")
 
     local section = CreateFrame("Frame", nil, parent)
     section:SetPoint("TOPLEFT", toggle, "BOTTOMLEFT", 0, -4)
@@ -390,13 +401,13 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
 
     local title = section:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
     title:SetPoint("TOPLEFT", 0, 0)
-    title:SetText("|cff33ff99Rotação da aba (editável)|r")
+    title:SetText(L.rot_header)
 
     local desc = section:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
     desc:SetWidth(380)
     desc:SetJustifyH("LEFT")
-    desc:SetText("Ordem abaixo = prioridade. Padrao = guia do projeto; mudancas salvas por personagem. Toque em + para adicionar condicao, em - para remover. Use as setas ^ e v para subir/descer; o check liga/desliga; clicar no icone testa o flash.")
+    desc:SetText(L.rot_desc)
 
     local state = { specKey = nil }
     for specKey in pairs(specs) do state.specKey = state.specKey or specKey end
@@ -557,14 +568,14 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
                 end
             end
         end
-        Header("Especial (do guia)")
-        Item("- sempre -", (not node.condition or node.condition == ""), function() node.condition = "" end)
+        Header(L.rot_special_header)
+        Item(L.rot_always, (not node.condition or node.condition == ""), function() node.condition = "" end)
         for _, key in ipairs(SortedPredicateKeys(preds)) do
             local pl = preds[key]
             Item((pl and pl.label) or key, node.condition == key, function() node.condition = key end)
         end
         Header("------------------------")
-        Item("Apagar todas as condicoes", false, function()
+        Item(L.rot_clear_all, false, function()
             node.condition = ""
             node.filter = nil
         end)
@@ -579,7 +590,7 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
         end
         local any = false
         if node.condition and node.condition ~= "" then
-            Item("Especial: " .. PredicateLabel(preds, node.condition), function() node.condition = "" end)
+            Item(L.rot_special_prefix .. PredicateLabel(preds, node.condition), function() node.condition = "" end)
             any = true
         end
         if type(node.filter) == "table" then
@@ -599,9 +610,9 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
                 end
             end
         end
-        if not any then Header("(nenhuma condicao ativa)") end
+        if not any then Header(L.rot_none_active) end
         Header("------------------------")
-        Item("Apagar todas as condicoes", function()
+        Item(L.rot_clear_all, function()
             node.condition = ""
             node.filter = nil
         end)
@@ -610,14 +621,14 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
 
     local function OpenAddMenu(btn, node, refresh)
         local preds = type(moduleAddon.RotationPredicates) == "table" and moduleAddon.RotationPredicates or {}
-        ShowPicker(btn, "Adicionar condicao", function()
+        ShowPicker(btn, L.rot_add_condition, function()
             return BuildAddItems(node, preds)
         end, refresh)
     end
 
     local function OpenRemoveMenu(btn, node, refresh)
         local preds = type(moduleAddon.RotationPredicates) == "table" and moduleAddon.RotationPredicates or {}
-        ShowPicker(btn, "Remover condicao", function()
+        ShowPicker(btn, L.rot_remove_condition, function()
             return BuildRemoveItems(node, preds)
         end, refresh)
     end
@@ -656,8 +667,8 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
             iconBtn:GetNormalTexture():SetDesaturated(node.enabled == false)
             iconBtn:SetScript("OnEnter", function(self)
                 GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-                GameTooltip:SetText(tostring(node.name), 1, 1, 1)
-                GameTooltip:AddLine("Clique: testa o flash na barra de ação", 0.6, 0.8, 1)
+                GameTooltip:SetText(tostring(NodeDisplayName(node, moduleAddon)), 1, 1, 1)
+                GameTooltip:AddLine(L.rot_click_test, 0.6, 0.8, 1)
                 GameTooltip:Show()
             end)
             iconBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -673,7 +684,7 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
                     local okByName = (node.name and SFA.IsSpellKnown(node.name))
                         or (localized and SFA.IsSpellKnown(localized))
                     if not okByName then
-                        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Rot]|r Você não conhece esta magia ainda.")
+                        DEFAULT_CHAT_FRAME:AddMessage(L.rot_not_known)
                         return
                     end
                 end
@@ -685,7 +696,7 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
             nameFS:SetWidth(150)
             nameFS:SetJustifyH("LEFT")
             nameFS:SetJustifyV("MIDDLE")
-            nameFS:SetText((node.enabled == false and "|cff888888" or "|cffffffff") .. tostring(node.name) .. "|r")
+            nameFS:SetText((node.enabled == false and "|cff888888" or "|cffffffff") .. tostring(NodeDisplayName(node, moduleAddon)) .. "|r")
 
             local addBtn = CreateFrame("Button", nil, card, "UIPanelButtonTemplate")
             addBtn:SetSize(28, 20)
@@ -725,7 +736,7 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
             local function RefreshColors()
                 local nTex = iconBtn:GetNormalTexture()
                 if nTex then nTex:SetDesaturated(node.enabled == false) end
-                nameFS:SetText((node.enabled == false and "|cff888888" or "|cffffffff") .. tostring(node.name) .. "|r")
+                nameFS:SetText((node.enabled == false and "|cff888888" or "|cffffffff") .. tostring(NodeDisplayName(node, moduleAddon)) .. "|r")
             end
             local function RefreshCond()
                 condFS:SetText(NodeConditionText(node, preds))
@@ -797,7 +808,7 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
     local reset = CreateFrame("Button", nil, section, "UIPanelButtonTemplate")
     reset:SetSize(150, 22)
     reset:SetPoint("TOPLEFT", cardsHost, "BOTTOMLEFT", 0, -10)
-    reset:SetText("Restaurar padrão")
+    reset:SetText(L.rot_restore)
     reset:SetScript("OnClick", function()
         s.ResetRotation(moduleName, state.specKey)
         BuildCards()
@@ -806,16 +817,16 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
     local saveBtn = CreateFrame("Button", nil, section, "UIPanelButtonTemplate")
     saveBtn:SetSize(110, 22)
     saveBtn:SetPoint("TOPLEFT", reset, "BOTTOMLEFT", 0, -6)
-    saveBtn:SetText("Gravar rotação")
+    saveBtn:SetText(L.rot_save)
     saveBtn:SetScript("OnClick", function()
         SaveOrder()
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Rot]|r Rotação gravada (por personagem) para " .. tostring(moduleName) .. " / " .. tostring(state.specKey) .. ".")
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.rot_saved, tostring(moduleName), tostring(state.specKey)))
     end)
 
     local shareBtn = CreateFrame("Button", nil, section, "UIPanelButtonTemplate")
     shareBtn:SetSize(110, 22)
     shareBtn:SetPoint("LEFT", saveBtn, "RIGHT", 6, 0)
-    shareBtn:SetText("Compartilhar")
+    shareBtn:SetText(L.rot_share_button)
 
     local sharePanel = CreateFrame("Frame", nil, section)
     sharePanel:SetPoint("TOPLEFT", saveBtn, "BOTTOMLEFT", 0, -10)
@@ -824,11 +835,11 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
 
     local shareTitle = sharePanel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     shareTitle:SetPoint("TOPLEFT", 0, 0)
-    shareTitle:SetText("|cff33ff99Compartilhar rotação|r (formato !SFROT-1!, estilo Hekili)")
+    shareTitle:SetText(L.rot_share)
 
     local expLabel = sharePanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     expLabel:SetPoint("TOPLEFT", shareTitle, "BOTTOMLEFT", 0, -8)
-    expLabel:SetText("Sua rotação - copie e envie:")
+    expLabel:SetText(L.rot_yours)
 
     local exportBox = CreateFrame("EditBox", nil, sharePanel, "InputBoxTemplate")
     exportBox:SetMultiLine(true)
@@ -841,7 +852,7 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
     local selectAllBtn = CreateFrame("Button", nil, sharePanel, "UIPanelButtonTemplate")
     selectAllBtn:SetSize(120, 18)
     selectAllBtn:SetPoint("TOPLEFT", exportBox, "BOTTOMLEFT", 0, -6)
-    selectAllBtn:SetText("Selecionar tudo")
+    selectAllBtn:SetText(L.rot_select_all)
     selectAllBtn:SetScript("OnClick", function()
         exportBox:SetFocus()
         exportBox:HighlightText()
@@ -849,7 +860,7 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
 
     local impLabel = sharePanel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     impLabel:SetPoint("TOPLEFT", selectAllBtn, "BOTTOMLEFT", 0, -8)
-    impLabel:SetText("Importar - cole a rotação de alguém aqui:")
+    impLabel:SetText(L.rot_import_title)
 
     local importBox = CreateFrame("EditBox", nil, sharePanel, "InputBoxTemplate")
     importBox:SetMultiLine(true)
@@ -862,10 +873,10 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
     local importBtn = CreateFrame("Button", nil, sharePanel, "UIPanelButtonTemplate")
     importBtn:SetSize(130, 20)
     importBtn:SetPoint("TOPLEFT", importBox, "BOTTOMLEFT", 0, -6)
-    importBtn:SetText("Importar rotação")
+    importBtn:SetText(L.rot_import_button)
     importBtn:SetScript("OnClick", function()
         local text = importBox:GetText()
-        local ok, why = false, "falhou"
+        local ok, why = false, L.rot_failed
         pcall(function()
             ok, why = s.ImportRotationString(moduleAddon, moduleName, state.specKey, text)
         end)
@@ -874,7 +885,7 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
             importBox:SetText("")
             BuildCards()
         else
-            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF Rot]|r Importar falhou: " .. tostring(why))
+            DEFAULT_CHAT_FRAME:AddMessage(string.format(L.rot_import_failed, tostring(why)))
         end
     end)
 
@@ -882,17 +893,17 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
     shareHint:SetPoint("TOPLEFT", importBtn, "BOTTOMLEFT", 0, -6)
     shareHint:SetWidth(380)
     shareHint:SetJustifyH("LEFT")
-    shareHint:SetText("Importa só a spec desta aba. Nós desconhecidos são ignorados. A importação substitui a sua rotação personalizada atual desta spec (restaurar padrão reverte).")
+    shareHint:SetText(L.rot_import_help)
 
     shareBtn:SetScript("OnClick", function()
         if sharePanel:IsShown() then
             sharePanel:Hide()
-            shareBtn:SetText("Compartilhar")
+            shareBtn:SetText(L.rot_share_button)
         else
             local exportStr = s.ExportRotationString(moduleAddon, moduleName, state.specKey)
             exportBox:SetText(exportStr or "")
             sharePanel:Show()
-            shareBtn:SetText("Compartilhar -")
+            shareBtn:SetText(L.rot_share_button .. " -")
         end
     end)
 
@@ -904,10 +915,10 @@ function s.BuildRotationEditor(parent, anchorFrame, moduleName, moduleAddon)
         expanded = not expanded
         if expanded then
             section:Show()
-            toggle:SetText("Rotação personalizada -")
+            toggle:SetText(L.rot_custom_title .. " -")
         else
             section:Hide()
-            toggle:SetText("Rotação personalizada +")
+            toggle:SetText(L.rot_custom_title .. " +")
         end
     end)
 

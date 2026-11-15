@@ -4,7 +4,7 @@
 -- Sem dependencias externas (usa apenas API nativa do WoW).
 
 local addonName = "SpellFlashForever"
-local addon = CreateFrame("Frame", addonName, UIParent)
+local addon = _G[addonName] or CreateFrame("Frame", addonName, UIParent)
 _G[addonName] = addon
 
 -- ---------------------------------------------------------------------------
@@ -30,6 +30,7 @@ if not db.handle then
 end
 
 local s = addon
+local L = addon.L
 s.Spam = {}
 s.UpdatedVariables = {}
 local SPELLDELAY = {}
@@ -360,7 +361,7 @@ local function FlashFrame(frame, color, size, brightness, blink, texture, fixedS
     if s.OnFlash then
         local ok, err = pcall(s.OnFlash, frame, slot)
         if not ok and s.DebugFlash then
-            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF DEBUG]|r Erro no OnFlash: " .. tostring(err))
+            DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_onflash_error, tostring(err)))
         end
     end
 
@@ -587,7 +588,7 @@ local function DumpActionSlots()
     end
 
     if DEFAULT_CHAT_FRAME then
-        DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF DEBUG]|r Slots ocupados: " .. table.concat(parts, " | "))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_slots_occupied, table.concat(parts, " | ")))
     end
 end
 
@@ -599,7 +600,7 @@ local function PrintMissingSlot(spellName)
     if last and now - last < 5 then return end
     lastMissingPrint[key] = now
     if DEFAULT_CHAT_FRAME then
-        DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF DEBUG]|r Nenhum slot na barra de ação encontrado para '" .. key .. "'.")
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_slot_not_found, key))
     end
     DumpActionSlots()
 end
@@ -659,7 +660,7 @@ function s.FlashAction(spellName, color, size, brightness, blink, noMacros, text
             end
         end
         if not found and s.DebugFlash then
-            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF DEBUG]|r Slot " .. slot .. " encontrado para '" .. name .. "' mas nenhum botão de barra corresponde.")
+            DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_slot_no_button, tostring(slot), tostring(name)))
         end
     else
         PrintMissingSlot(name)
@@ -1102,21 +1103,21 @@ addon:SetScript("OnEvent", function(self, event, arg1)
             s.SettingsCategoryID = category and category:GetID() or nil
             s.SettingsCategoryObject = category
             if s.SettingsCategoryID then
-                DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r Categoria registrada. ID: " .. s.SettingsCategoryID)
+                DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_category_id, tostring(s.SettingsCategoryID)))
             else
-                DEFAULT_CHAT_FRAME:AddMessage("|cffff0000SpellFlashForever:|r ERRO: SettingsCategoryID é nil!")
+                DEFAULT_CHAT_FRAME:AddMessage(L.dbg_category_nil)
             end
             Settings.RegisterAddOnCategory(category)
         else
-            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000SpellFlashForever:|r Settings API não disponível!")
+            DEFAULT_CHAT_FRAME:AddMessage(L.dbg_settings_missing)
         end
 
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r carregado (Classe: " .. CLASS .. "). Digite |cffffcc00/sf|r para abrir o menu.")
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_loaded, tostring(CLASS)))
     elseif event == "PLAYER_ENTERING_WORLD" then
         if not initialized then
             CheckVariables()
             initialized = true
-            DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r carregado (Classe: " .. CLASS .. "). Digite |cffffcc00/sf|r para abrir o menu.")
+            DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_loaded, tostring(CLASS)))
         end
     end
 end)
@@ -1142,69 +1143,69 @@ SlashCmdList["SPELLFLASHFOREVER"] = function(msg)
     end
 
     if msg == "help" then
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever|r comandos:")
-        DEFAULT_CHAT_FRAME:AddMessage("  /sf ou /sfbyferal        - Abrir/fechar a janela visual de configurações")
-        DEFAULT_CHAT_FRAME:AddMessage("  /sfbyferal flash <nome>  - Flashar um feitiço/item")
-        DEFAULT_CHAT_FRAME:AddMessage("  /sfbyferal size <n>      - Tamanho do flash (atual: " .. FLASH_SIZE_PERCENT .. ")")
-        DEFAULT_CHAT_FRAME:AddMessage("  /sfbyferal bright <n>    - Brilho do flash (atual: " .. FLASH_BRIGHTNESS_PERCENT .. ")")
-        DEFAULT_CHAT_FRAME:AddMessage("  /sfbyferal off           - Desativar flash de feitiços")
-        DEFAULT_CHAT_FRAME:AddMessage("  /sfbyferal on            - Ativar flash de feitiços")
-        DEFAULT_CHAT_FRAME:AddMessage("  /sfbyferal status        - Mostrar status")
-        DEFAULT_CHAT_FRAME:AddMessage("  /sfbyferal key [on|off]  - Botão que mostra a tecla da habilidade (use /sfkey)")
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_slash_header)
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_help_1)
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_help_2)
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_help_3, tostring(FLASH_SIZE_PERCENT)))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_help_4, tostring(FLASH_BRIGHTNESS_PERCENT)))
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_help_5)
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_help_6)
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_help_7)
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_help_8)
         return
     end
 
     if msg:match("^flash%s+(.+)$") then
         local name = msg:match("^flash%s+(.+)$")
         if handle.spell_flashing_off then
-            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000SpellFlashForever:|r flash está desativado. Use /sfbyferal on")
+            DEFAULT_CHAT_FRAME:AddMessage(L.dbg_flash_disabled)
             return
         end
         s.FlashAction(name, "yellow", 240, 100, true)
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r flashando: " .. name)
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_flashing, tostring(name)))
         return
     end
 
     if msg == "size" then
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r tamanho atual: " .. FLASH_SIZE_PERCENT)
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_size_current, tostring(FLASH_SIZE_PERCENT)))
         return
     end
 
     if msg:match("^size%s+(%d+)$") then
         FLASH_SIZE_PERCENT = tonumber(msg:match("^size%s+(%d+)$")) or DEFAULT_FLASH_SIZE_PERCENT
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r tamanho definido: " .. FLASH_SIZE_PERCENT)
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_size_set, tostring(FLASH_SIZE_PERCENT)))
         return
     end
 
     if msg:match("^bright%s+(%d+)$") then
         FLASH_BRIGHTNESS_PERCENT = tonumber(msg:match("^bright%s+(%d+)$")) or DEFAULT_FLASH_BRIGHTNESS_PERCENT
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r brilho definido: " .. FLASH_BRIGHTNESS_PERCENT)
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_bright_set, tostring(FLASH_BRIGHTNESS_PERCENT)))
         return
     end
 
     if msg == "off" then
         handle.spell_flashing_off = true
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r flash de feitiços desativado")
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_off)
         return
     end
 
     if msg == "on" then
         handle.spell_flashing_off = nil
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r flash de feitiços ativado")
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_on)
         return
     end
 
     if msg == "status" then
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r classe: " .. CLASS .. " | raca: " .. RACE)
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_status, tostring(CLASS), tostring(RACE)))
         local hunterApi = _G["SpellFlash_Hunter"]
         local hunterRace = hunterApi and hunterApi.GetDetectedRace and hunterApi.GetDetectedRace()
         if hunterRace then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r Hunter raça detectada: " .. tostring(hunterRace))
+            DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_race_detected, tostring(hunterRace)))
         end
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r flash off: " .. tostring(handle.spell_flashing_off))
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r tamanho: " .. FLASH_SIZE_PERCENT .. " | brilho: " .. FLASH_BRIGHTNESS_PERCENT)
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r debug: " .. tostring(s.DebugFlash))
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r botão de tecla: " .. tostring(s.IsKeyButtonEnabled and s.IsKeyButtonEnabled()))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_flash_off, tostring(handle.spell_flashing_off)))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_status_sizes, tostring(FLASH_SIZE_PERCENT), tostring(FLASH_BRIGHTNESS_PERCENT)))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_debug_status, tostring(s.DebugFlash)))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_key_button, tostring(s.IsKeyButtonEnabled and s.IsKeyButtonEnabled())))
         return
     end
 
@@ -1225,21 +1226,21 @@ SlashCmdList["SPELLFLASHFOREVER"] = function(msg)
 
     if msg == "debug" then
         s.DebugFlash = not s.DebugFlash
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r debug " .. (s.DebugFlash and "ativado" or "desativado"))
+        DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_debug_toggle, s.DebugFlash and L.dbg_debug_on_word or L.dbg_debug_off_word))
         return
     end
 
     if msg == "traits" then
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r === C_Traits / C_ClassTalents ===")
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_traits_header)
         if C_Traits then
             local methods = {}
             for k, v in pairs(C_Traits) do
                 if type(v) == "function" then table.insert(methods, k) end
             end
             table.sort(methods)
-            DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r C_Traits: " .. table.concat(methods, ", "))
+            DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_traits, table.concat(methods, ", ")))
         else
-            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000SpellFlashForever:|r C_Traits: nil")
+            DEFAULT_CHAT_FRAME:AddMessage(L.dbg_traits_nil)
         end
         if C_ClassTalents then
             local methods = {}
@@ -1247,13 +1248,13 @@ SlashCmdList["SPELLFLASHFOREVER"] = function(msg)
                 if type(v) == "function" then table.insert(methods, k) end
             end
             table.sort(methods)
-            DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r C_ClassTalents: " .. table.concat(methods, ", "))
+            DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_classtalents, table.concat(methods, ", ")))
         else
-            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000SpellFlashForever:|r C_ClassTalents: nil")
+            DEFAULT_CHAT_FRAME:AddMessage(L.dbg_classtalents_nil)
         end
-        DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r === fim ===")
+        DEFAULT_CHAT_FRAME:AddMessage(L.dbg_traits_end)
         return
     end
 
-    DEFAULT_CHAT_FRAME:AddMessage("|cffff0000SpellFlashForever:|r comando desconhecido: " .. msg .. ". Use /sfbyferal help")
+    DEFAULT_CHAT_FRAME:AddMessage(string.format(L.dbg_unknown_command, msg))
 end

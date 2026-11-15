@@ -10,13 +10,14 @@
 -- (cross-check Spy\List.lua): registrado no histórico H-0121.
 
 local AddonName, AddonTable = ...
+local L = AddonTable.L
 local SFBF = _G["SpellFlashForever"]
 
 AddonTable.Castable = AddonTable.Castable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.Castable)) or {}
 AddonTable.VehicleCastable = AddonTable.VehicleCastable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.VehicleCastable)) or {}
 AddonTable.ItemCastable = AddonTable.ItemCastable or (SFBF and SFBF.CopyTable and SFBF.CopyTable(SFBF.ItemCastable)) or {}
 
-print('|cFF00FF00[SF Shaman]|r Functions carregado!')
+print(string.format(L.mod_loaded, "Shaman", L.mod_load_functions))
 
 local function SpellName(id) return AddonTable.SpellName(id) end
 local AddonCastable = AddonTable.Castable
@@ -208,7 +209,7 @@ end
 -- =====================================================
 AddonTable.RotationPredicates = AddonTable.RotationPredicates or {}
 local P = AddonTable.RotationPredicates
-P["enemy_casting"] = { label = "alvo atacável conjurando (interrupt)",
+P["enemy_casting"] = { label = L.pred_casting_interrupt,
     fn = function(env)
         if not env.hasActiveEnemy then return false end
         return AddonTable.IsTargetInterruptibleCasting and AddonTable.IsTargetInterruptibleCasting("target") and true or false
@@ -229,26 +230,26 @@ local function HasClearcasting()
     end
     return false
 end
-P["has_clearcasting"] = { label = "Clearcasting ativo (Elemental Focus)",
+P["has_clearcasting"] = { label = L.pred_clearcasting,
     fn = function(env) return HasClearcasting() end }
 -- Gate do Chain Lightning pós-tuning (mana ~225% do LB): só com AoE, mana >= 50% ou Clearcasting.
-P["cl_ok"] = { label = "Chain Lightning ok (AoE ou mana >= 50% ou Clearcasting)",
+P["cl_ok"] = { label = L.pred_chain_lightning_ok,
     fn = function(env)
         if env.isAoE then return (env.manaPct or 0) > 15 end
         if (env.manaPct or 0) >= 50 then return true end
         return HasClearcasting()
     end }
-P["is_melee"]      = { label = "em alcance melee", fn = function(env) return env.isMelee and true or false end }
-P["melee_combat"]  = { label = "em alcance melee e em combate", fn = function(env) return env.isMelee and env.inCombat and true or false end }
+P["is_melee"]      = { label = L.pred_melee_range, fn = function(env) return env.isMelee and true or false end }
+P["melee_combat"]  = { label = L.pred_melee_combat, fn = function(env) return env.isMelee and env.inCombat and true or false end }
 P["is_ele"]           = { label = "Elemental", fn = function(env) return env.spec == "ELE" end }
 P["is_enh"]           = { label = "Enhancement", fn = function(env) return env.spec == "ENH" end }
-P["not_lightning_shield_up"] = { label = "Lightning Shield ausente",
+P["not_lightning_shield_up"] = { label = L.pred_lightning_shield,
     fn = function(env) return not AddonTable.IsSelfBuffUp(324) end }
-P["not_flametongue_up_ele"] = { label = "Elemental e Flametongue ausente",
+P["not_flametongue_up_ele"] = { label = L.pred_ele_flametongue,
     fn = function(env) return env.spec == "ELE" and not AddonTable.IsSelfBuffUp(8024) end }
-P["not_windfury_up_enh"] = { label = "Enhancement e Windfury ausente",
+P["not_windfury_up_enh"] = { label = L.pred_enh_windfury,
     fn = function(env) return env.spec == "ENH" and not AddonTable.IsSelfBuffUp(8232) end }
-P["is_enh_not_soe_up"]  = { label = "Enhancement e Strength of Earth ausente",
+P["is_enh_not_soe_up"]  = { label = L.pred_enh_earth,
     fn = function(env)
         if env.spec ~= "ENH" then return false end
         if not AddonTable.IsTotemActiveByName then return true end

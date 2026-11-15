@@ -8,10 +8,11 @@ local addonName = "SpellFlashForever"
 local s = _G[addonName]
 if not s then
     if DEFAULT_CHAT_FRAME then
-        DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF]|r Compat: tabela " .. tostring(addonName) .. " não encontrada.")
+        DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF]|r Compat: SpellFlashForever table missing.")
     end
     return
 end
+local L = s.L
 
 -- ---------------------------------------------------------------------------
 -- Helpers locais
@@ -798,7 +799,7 @@ driver:SetScript("OnUpdate", function(self, elapsed)
             if not moduleOff then
                 local ok, err = pcall(fn, x)
                 if not ok and s.DebugFlash then
-                    DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[SF DEBUG]|r Módulo '" .. tostring(moduleName) .. "' falhou: " .. tostring(err))
+                    DEFAULT_CHAT_FRAME:AddMessage(string.format(L.compat_module_failed, tostring(moduleName), tostring(err)))
                 end
             end
         end
@@ -820,4 +821,4 @@ end)
 
 _G.SpellFlashAddon = s
 
-DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99SpellFlashForever:|r compatibilidade (SpellFlash WotLK) carregada.")
+DEFAULT_CHAT_FRAME:AddMessage(L.compat_loaded)

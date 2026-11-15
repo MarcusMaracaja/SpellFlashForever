@@ -10,7 +10,7 @@ _G.SpellFlash_Warrior = AddonTable
 if not AddonTable.ShouldUseRacial then AddonTable.ShouldUseRacial = function() return nil end end
 if not AddonTable.ShouldUseTrinket then AddonTable.ShouldUseTrinket = function() return nil end end
 
-local L = AddonTable.Localize
+local L = AddonTable.L
 local SpellFlashAddon = SpellFlashAddon
 
 local TREE_HINTS_WARRIOR = {
@@ -118,17 +118,17 @@ SpellFlashAddon.Spam[AddonName] = function(x)
     elseif SpellFlashAddon.IsSpellKnown and SpellFlashAddon.IsSpellKnown(12294) then
         isArms, isFury, isProt, specSource = true, false, false, "Arms(12294)"
     else
-        isArms, isFury, isProt, specSource = true, false, false, "padrão Arms" end
+        isArms, isFury, isProt, specSource = true, false, false, L.dbg_default_spec .. " Arms" end
 
     -- Mensagem de Inicialização (uma vez por sessão) + saudação racial
     if not AddonTable.SpecMessageSent then
         local msg = "|cFF00FF00[SF Warrior]|r "
         if isArms then
-            print(msg.."|cFF69CCF0Arms:|r Ode ao eixo da guerra — que cada golpe seja uma sentença!")
+            print(msg .. L.bless_arms)
         elseif isFury then
-            print(msg.."|cFFFF8000Fury:|r Sangue na lâmina — a fúria te revigorará!")
+            print(msg .. L.bless_fury)
         else
-            print(msg.."|cFF ABD473Protection:|r Baluarte — sua muralha nunca cairá!")
+            print(msg .. L.bless_prot)
         end
         print(msg.."|cFFCCCCCCspec:|r " .. tostring(specSource) .. " (Arms=" .. tostring(pointsArms) .. " Fury=" .. tostring(pointsFury) .. " Protection=" .. tostring(pointsProt) .. ")")
         if AddonTable.ShowRacialInfo and not AddonTable.RacialGreetingSent then
@@ -186,9 +186,9 @@ end
 SLASH_SFWARRIORTREES1 = "/sftreesw"
 SlashCmdList["SFWARRIORTREES"] = function()
     local function P(m) DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Warrior Trees]|r " .. tostring(m)) end
-    if not (C_ClassTalents and C_Traits) then P("C_ClassTalents/C_Traits ausentes") return end
+    if not (C_ClassTalents and C_Traits) then P(L.dbg_traits_absent) return end
     local r = SpellFlashAddon.CountTalentTreePoints and SpellFlashAddon.CountTalentTreePoints(TREE_HINTS_WARRIOR)
-    if not r then P("Contagem indisponível") return end
+    if not r then P(L.dbg_count_na) return end
     for i, name in ipairs(r.names or {}) do
         P(tostring(i) .. ": " .. tostring(name))
     end

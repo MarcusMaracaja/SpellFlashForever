@@ -2,6 +2,7 @@
 -- Registro da aba "Paladin" na GUI /sf (mesmo padrão das outras classes).
 local AddonName, AddonTable = ...
 local SFBF = _G["SpellFlashForever"]
+local L = (SFBF and SFBF.L) or setmetatable({}, { __index = function(_, k) return k end })
 
 local function GetModuleOff()
     if not (SFBF and SFBF.GetModuleConfig) then return false end
@@ -49,7 +50,7 @@ local function BuildPaladinTab(parent)
     desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
     desc:SetWidth(400)
     desc:SetJustifyH("LEFT")
-    desc:SetText("Controle a rotação do Paladin: se desligado, o módulo deixa de sugerir magias (as sugestões gerais continuam em Geral).")
+    desc:SetText(string.format(L.mod_desc_spells, "Paladin"))
 
     local cb = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
     cb:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -16)
@@ -58,7 +59,7 @@ local function BuildPaladinTab(parent)
     local fs = parent:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
     fs:SetPoint("LEFT", cb, "RIGHT", 4, 0)
     fs:SetJustifyH("LEFT")
-    fs:SetText("Ativar sugestões de rotação do Paladin")
+    fs:SetText(string.format(L.mod_toggle, "Paladin"))
     cb.label = fs
     cb:SetChecked(not GetModuleOff())
     cb:SetScript("OnClick", function(self)
@@ -69,11 +70,11 @@ local function BuildPaladinTab(parent)
     hint:SetPoint("TOPLEFT", cb, "BOTTOMLEFT", 0, -12)
     hint:SetWidth(400)
     hint:SetJustifyH("LEFT")
-    hint:SetText("Desligar acima equivale a 'spell_flashing_off' só para este módulo.")
+    hint:SetText(L.mod_toggle_hint)
 
     local specTitle = parent:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     specTitle:SetPoint("TOPLEFT", hint, "BOTTOMLEFT", 0, -18)
-    specTitle:SetText("Forçar rotação (senão, detecta automaticamente):")
+    specTitle:SetText(L.mod_spec_title)
 
     local specBoxes = {}
     local function SetSpecExclusive(target)
@@ -90,16 +91,16 @@ local function BuildPaladinTab(parent)
         end
     end
 
-    specBoxes["PROT"] = CreateCheck(parent, specTitle, -8, "Protection (tank)",
+    specBoxes["PROT"] = CreateCheck(parent, specTitle, -8, L.spec_prot,
         function() return GetSpecOverride() == "PROT" end, SetSpecExclusive("PROT"))
-    specBoxes["RET"] = CreateCheck(parent, specBoxes["PROT"], -8, "Retribution (DPS)",
+    specBoxes["RET"] = CreateCheck(parent, specBoxes["PROT"], -8, L.spec_ret,
         function() return GetSpecOverride() == "RET" end, SetSpecExclusive("RET"))
 
     local specHint = parent:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
     specHint:SetPoint("TOPLEFT", specBoxes["RET"], "BOTTOMLEFT", 0, -12)
     specHint:SetWidth(400)
     specHint:SetJustifyH("LEFT")
-    specHint:SetText("Use se a rotação não estiver sendo reconhecida em combate. Holy não é suportada (rotas por detecção não existem); use o override acima.")
+    specHint:SetText(L.mod_pal_spec_hint)
 
     if SFBF and type(SFBF.BuildRotationEditor) == "function" then
         SFBF.BuildRotationEditor(parent, specHint, AddonName, AddonTable)
@@ -109,7 +110,7 @@ end
 if SFBF and type(SFBF.RegisterConfigTab) == "function" then
     SFBF.RegisterConfigTab("paladin", "Paladin", BuildPaladinTab, "PALADIN")
 else
-    print("|cffff9900[SF Paladin]|r SpellFlashForever não disponível para registrar a aba Paladin.")
+    print(string.format(L.mod_not_available, "Paladin", "Paladin"))
 end
 
-print("|cFF00FF00[SF Paladin]|r Options carregado!")
+print(string.format(L.mod_loaded, "Paladin", L.mod_load_options))

@@ -10,7 +10,7 @@ _G.SpellFlash_Druid = AddonTable
 if not AddonTable.ShouldUseRacial then AddonTable.ShouldUseRacial = function() return nil end end
 if not AddonTable.ShouldUseTrinket then AddonTable.ShouldUseTrinket = function() return nil end end
 
-local L = AddonTable.Localize
+local L = AddonTable.L
 local SpellFlashAddon = SpellFlashAddon
 
 local TREE_HINTS_DRUID = {
@@ -190,13 +190,13 @@ end)
 -- ROTATION SPECS (declaradas como DADO; editor /sf → Druid)
 -- =====================================================
 if AddonTable.RotationPredicates then
-    AddonTable.RotationPredicates["behind"] = { label = "por trás do alvo", fn = function(env) return IsBehind() end }
+    AddonTable.RotationPredicates["behind"] = { label = L.pred_behind, fn = function(env) return IsBehind() end }
 end
 
 AddonTable.RotationSpecs = AddonTable.RotationSpecs or {}
 
 AddonTable.RotationSpecs.CAT = {
-    title = "Feral — Gato (DPS)",
+    title = L.title_cat,
     -- SEM nó de forma: o jogador escolhe a forma; a rotação de Gato roda só quando
     -- em Cat Form (o hub despacha CAT/BEAR conforme env.form).
     nodes = AddonTable.ConcatCommonNodes(AddonTable.DruidCommonNodes, {
@@ -210,7 +210,7 @@ AddonTable.RotationSpecs.CAT = {
 }
 
 AddonTable.RotationSpecs.BEAR = {
-    title = "Feral — Urso (tank)",
+    title = L.title_bear,
     -- SEM nó de forma: o jogador escolhe a forma; a rotação de Urso roda quando
     -- em Bear Form (o hub despacha BEAR conforme env.form == 2).
     nodes = AddonTable.ConcatCommonNodes(AddonTable.DruidCommonNodes, {
@@ -235,7 +235,7 @@ AddonTable.RotationSpecs.BAL = {
 }
 
 AddonTable.RotationSpecs.REST = {
-    title = "Restauração",
+    title = L.title_rest,
     nodes = AddonTable.ConcatCommonNodes(AddonTable.DruidCommonNodes, {
         { id = "frenzied_regeneration", spellID = 22842, name = "Frenzied Regeneration", color = "Green", condition = "always" },
         { id = "cat_form",    spellID = 768,   name = "Cat Form",    color = "Green",  condition = "bear_form" },
@@ -305,17 +305,17 @@ SpellFlashAddon.Spam[AddonName] = function(x)
     elseif bestTree == "FERAL" then isFeral, isBal, isRest, specSource = true, false, false, "Feral=" .. tostring(pointsFeral)
     elseif bestTree == "BAL" then isFeral, isBal, isRest, specSource = false, true, false, "Balance=" .. tostring(pointsBal)
     elseif bestTree == "REST" then isFeral, isBal, isRest, specSource = false, false, true, "Restoration=" .. tostring(pointsRest)
-    else isFeral, isBal, isRest, specSource = true, false, false, "padrão Feral" end
+    else isFeral, isBal, isRest, specSource = true, false, false, L.dbg_default_spec .. " Feral" end
 
     -- Mensagem de Inicialização (uma vez por sessão) + saudação racial
     if not AddonTable.SpecMessageSent then
         local msg = "|cFF00FF00[SF Druid]|r "
         if isFeral then
-            print(msg.."|cFF69CCF0Feral:|r Entre no instinto — a selva te aceitará!")
+            print(msg .. L.bless_cat)
         elseif isBal then
-            print(msg.."|cFFBD9CFFBalance:|r O equilíbrio é o caminho — as estrelas sussurram!")
+            print(msg .. L.bless_bal)
         else
-            print(msg.."|cFFABD473Restoration:|r O grande enodo te guiará!")
+            print(msg .. L.bless_rest)
         end
         print(msg.."|cFFCCCCCCspec:|r " .. tostring(specSource) .. " (Feral=" .. tostring(pointsFeral) .. " Balance=" .. tostring(pointsBal) .. " Restoration=" .. tostring(pointsRest) .. ")")
         if AddonTable.ShowRacialInfo and not AddonTable.RacialGreetingSent then
@@ -393,9 +393,9 @@ end
 SLASH_SFDRUIDTREES1 = "/sftreesd"
 SlashCmdList["SFDRUIDTREES"] = function()
     local function P(m) DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Druid Trees]|r " .. tostring(m)) end
-    if not (C_ClassTalents and C_Traits) then P("C_ClassTalents/C_Traits ausentes") return end
+    if not (C_ClassTalents and C_Traits) then P(L.dbg_traits_absent) return end
     local r = SpellFlashAddon.CountTalentTreePoints and SpellFlashAddon.CountTalentTreePoints(TREE_HINTS_DRUID)
-    if not r then P("Contagem indisponível") return end
+    if not r then P(L.dbg_count_na) return end
     for i, name in ipairs(r.names or {}) do
         P(tostring(i) .. ": " .. tostring(name))
     end

@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: SpellFlash Forever: Druid
-## Notes: Sugestões de magias/habilidades para Druid (Feral Cat PvE, Balance). Adaptado do WotLK para WoW Forever (Interface 16001).
+## Notes: Feral Cat / Bear, Balance and Restoration rotation assistant for WoW Forever. | Assistente de rotação Druid (Feral Gato/Urso, Balance, Restoration) para o WoW Forever.
 ## Author: Marcus (SpellFlash original: Exalter)
-## Version: 6.3.0-forever
+## Version: 1.6.0
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## DefaultState: Enabled
 ## Dependencies: SpellFlashForever

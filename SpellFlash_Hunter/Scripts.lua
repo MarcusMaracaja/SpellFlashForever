@@ -1,4 +1,5 @@
 local AddonName, AddonTable = ...
+local L = AddonTable.L
 
 local TREE_HINTS_HUNTER = {
     BM = { "beast", "feras", "fera", "besta" },
@@ -506,19 +507,19 @@ SpellFlashAddon.Spam[AddonName] = function(NoCC, ActiveEnemy, PetAlive, PetActiv
     elseif SpellFlashAddon.IsSpellKnown(19306) then isBM, isMM, isSV, specSource = false, false, true, "SV(19306)"
     elseif SpellFlashAddon.IsSpellKnown(19574) then isBM, isMM, isSV, specSource = true, false, false, "BM(19574)"
     elseif SpellFlashAddon.IsSpellKnown(1310786) then isBM, isMM, isSV, specSource = false, true, false, "MM(1310786)"
-    else isBM, isMM, isSV, specSource = false, false, true, "padrão SV" end
+    else isBM, isMM, isSV, specSource = false, false, true, L.dbg_default_spec .. " SV" end
 
     -- Mensagem de Inicialização (inclui o que o cliente devolveu de spec)
     if not AddonTable.SpecMessageSent or (isSV or isMM or isBM) and AddonTable.CurrentSpec == "Low Level" then
         local msg = "|cFF00FF00[SF Hunter]|r "
         if isBM then
-            print(msg.."|cFFFF8000Mestre das Feras:|r O vínculo com seu pet é sua maior arma! Destrua-os!")
+            print(msg .. L.bless_bm)
         elseif isMM then
-            print(msg.."|cFF69CCF0Atirador de Elite:|r Precisão mortal a quilômetros de distância! Fogo neles!")
+            print(msg .. L.bless_mm)
         elseif isSV then
-            print(msg.."|cFFABD473Sobrevivência:|r Mestre das armadilhas e do veneno! Prepare a emboscada!")
+            print(msg .. L.bless_sv)
         else
-            print(msg.."|cFFCCCCCCRecruta Hunter:|r Aprendendo os caminhos da selva... Sobreviva!")
+            print(msg .. L.bless_low)
         end
         print(msg.."|cFFCCCCCCspec:|r " .. tostring(specSource) .. " (Feras=" .. tostring(pointsBM) .. " MM=" .. tostring(pointsMM) .. " SV=" .. tostring(pointsSV) .. ")")
         -- Saudação racial na mesma via PROVADA (print no load/PLAYER_* não aparece no cliente)
@@ -677,7 +678,7 @@ end
 SLASH_SFHUNTERTREES1 = "/sftrees"
 SlashCmdList["SFHUNTERTREES"] = function()
     local function P(m) DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99[SF Huntrees]|r " .. tostring(m)) end
-    if not (C_ClassTalents and C_Traits) then P("C_ClassTalents/C_Traits ausentes") return end
+    if not (C_ClassTalents and C_Traits) then P(L.dbg_traits_absent) return end
     local okCfg, cfg = pcall(C_ClassTalents.GetActiveConfigID)
     P("cfg=" .. tostring(okCfg and cfg) .. " (ok=" .. tostring(okCfg) .. ")")
     local okInfo, info = pcall(C_Traits.GetConfigInfo, cfg)
@@ -748,10 +749,10 @@ SlashCmdList["SFDISTD"] = function()
     P("SafeInteractDistance(3) = " .. tostring(AddonTable.SafeInteractDistance and AddonTable.SafeInteractDistance("target", 3)))
     P("AttackSlot = " .. tostring(SpellFlashAddon.FindActionSlot and SpellFlashAddon.FindActionSlot(6603)))
     if C_ActionBar and type(C_ActionBar.IsAttackAction) == "function" then
-        P("C_ActionBar.IsAttackAction existe (usado para localizar o slot de Atacar)")
+        P(L.dbg_attackaction_exists)
     else
-        P("C_ActionBar.IsAttackAction AUSENTE")
+        P(L.dbg_attackaction_absent)
     end
 end
 
-print('|cFF00FF00[SF Hunter]|r Scripts Core Carregado!')
+print(string.format(L.mod_loaded, "Hunter", L.mod_load_scripts))

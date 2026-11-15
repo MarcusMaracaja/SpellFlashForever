@@ -1,13 +1,14 @@
 ## Interface: 16001
 ## Title: SpellFlash Forever
-## Notes: SpellFlash para o WoW Forever. Flasha botoes de acao com sugestoes de feiticos/habilidades por classe e spec. Adaptado do SpellFlash (WotLK).
+## Notes: Rotation assistant for WoW Forever: flashes the recommended ability on your action bars. | Assistente de rotação para o WoW Forever: faz piscar a habilidade recomendada na barra de ação.
 ## Author: Marcus (SpellFlash original: Exalter, BigRedBrent, SF Community)
-## Version: 1.5.0
+## Version: 1.6.0
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## SavedVariables: SpellFlashForeverDB
 ## SavedVariablesPerCharacter: SpellFlashForeverCharDB
 ## DefaultState: Enabled
 
+Locales.lua
 SpellFlashForever.lua
 Compat.lua
 SharedFunctions.lua
