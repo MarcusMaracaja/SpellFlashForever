@@ -40,7 +40,7 @@ local RacialData = {
     Tauren = {
         name = L.race_tauren,
         greeting = L.race_greet_tauren,
-        activeRacial = { id = 20549, name = "War Stomp", situations = { multiTarget = true, enemyCasting = true, lowHp = true } }
+        activeRacial = { id = 20549, name = "War Stomp", situations = { multiTarget = true, enemyCasting = true, lowHp = true, castInterrupt = true } }
     },
     Troll = {
         name = L.race_troll,
@@ -254,7 +254,33 @@ local function SpellKnown(spellId)
     return true -- fail-open: deixar recomendar (cliente-friendly)
 end
 
-function s.ShouldUseRacial()
+function s.ShouldUseRacial(mode, interruptUnavailable)
+    -- Interrupt de último recurso (ex.: Tauren War Stomp) — invocado pelos módulos
+    -- quando o interrupt da classe não está disponível (em CD/sem requisito).
+    -- Exige: interrupt da classe indisponível, racial pronta, inimigo conjurando,
+    -- alvo PERTO (alcance do stomp) e usável agora.
+    if mode == "interrupt" then
+        if interruptUnavailable ~= true then return nil end
+        if not playerRacial or not playerRacial.id then return nil end
+        local situations = playerRacial.situations
+        if not (situations and situations.castInterrupt) then return nil end
+        if RacialCooldownRemaining(playerRacial.id) > 0 then return nil end
+        if not SpellKnown(playerRacial.id) then return nil end
+        -- Usabilidade: só o false bloqueia; nil deixa passar (cliente-friendly)
+        local spellName2 = (s.SpellName and s.SpellName(playerRacial.id)) or tostring(playerRacial.id)
+        if C_Spell and type(C_Spell.IsSpellUsable) == "function" then
+            local okU, usable = pcall(C_Spell.IsSpellUsable, playerRacial.id)
+            if okU and usable == false then return nil end
+        elseif type(IsUsableSpell) == "function" then
+            local okU, usable = pcall(IsUsableSpell, spellName2)
+            if okU and usable == false then return nil end
+        end
+        if not IsEnemyCasting("target") then return nil end
+        -- Alvo precisa estar perto do jogador (pisada aoe de curto alcance)
+        if not (s.SafeInteractDistance and s.SafeInteractDistance("target", 3)) then return nil end
+        return playerRacial.id
+    end
+
     if not playerRacial or not playerRacial.id then return nil end
     local spellId = playerRacial.id
     local spellName = (s.SpellName and s.SpellName(spellId)) or tostring(spellId)

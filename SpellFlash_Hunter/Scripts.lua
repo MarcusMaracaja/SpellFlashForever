@@ -628,6 +628,15 @@ SpellFlashAddon.Spam[AddonName] = function(NoCC, ActiveEnemy, PetAlive, PetActiv
             AddonTable.RawFlash(trinketName, "Aqua")
         end
     end
+    -- Interrupção de último recurso: racial (Pisada de Guerra) — inimigo conjurando e
+    -- Hunter não tem interrupt de classe → o stomp perto do jogador vira a única saída
+    local interruptRacial = AddonTable.ShouldUseRacial and AddonTable.ShouldUseRacial("interrupt", true)
+    if interruptRacial then
+        local racialName = AddonTable.SpellName(interruptRacial)
+        if racialName and SpellFlashAddon.Flashable(racialName) then
+            AddonTable.RawFlash(racialName, "Aqua")
+        end
+    end
 
     -- Utilidades Comuns (Pet, Aspectos, etc.)
     -- Curar/Chamar Pet piscam JUNTO com a rotação (não bloqueiam)

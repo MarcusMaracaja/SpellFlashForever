@@ -272,6 +272,7 @@ local ptBR = {
     pred_not_defensive = "você NÃO está em Defensive Stance (2)",
     pred_pvp_attackable = "PvP com alvo atacável",
     pred_target_casting = "alvo conjurando",
+    pred_roar_missing = "Demoralizing Roar ausente (Bear)",
     spec_feral = "Feral (Cat PvE) / Bear",
     spec_fury2h = "Fury (two-hand / dual)",
     cd_usage = "uso: /sfcd <spellID>",
@@ -741,6 +742,7 @@ do
     enUS.pred_not_defensive = "you are NOT in Defensive Stance (2)"
     enUS.pred_pvp_attackable = "PvP with attackable target"
     enUS.pred_target_casting = "target casting"
+    enUS.pred_roar_missing = "Demoralizing Roar missing (Bear)"
     enUS.spec_feral = "Feral (Cat PvE) / Bear"
     enUS.spec_fury2h = "Fury (two-hand / dual)"
     enUS.cd_usage = "usage: /sfcd <spellID>"

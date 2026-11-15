@@ -230,6 +230,27 @@ function s.IsTargetImmune(unit, immunities)
 end
 
 -- =====================================================
+-- ALVO ALIADO E VIVO (posições: buffar alvo amigo, heal em alvo amigo).
+-- Qualquer unidade que exista, seja aliada e esteja viva dá true.
+-- =====================================================
+function s.UnitFriendlyAndAlive(unit)
+    unit = unit or "target"
+    if not (UnitExists and UnitExists(unit)) then return false end
+    local dead = false
+    if type(UnitIsDeadOrGhost) == "function" then
+        local ok, d = pcall(UnitIsDeadOrGhost, unit)
+        if ok and d then dead = true end
+    elseif type(UnitIsDead) == "function" then
+        local ok, d = pcall(UnitIsDead, unit)
+        if ok and d then dead = true end
+    end
+    if dead then return false end
+    if type(UnitIsFriend) ~= "function" then return true end -- sem API: não bloqueia
+    local ok, f = pcall(UnitIsFriend, "player", unit)
+    return ok and (f and true or false) or false
+end
+
+-- =====================================================
 -- DETECÇÃO DE SPEC CLASS-AGNÓSTICA (pontos por árvore)
 -- Trees do cliente Forever (configId → treeIDs → nós); a árvore com mais
 -- pontos vence. 'treeHints': mapa chave→lista de tokens (substrings,

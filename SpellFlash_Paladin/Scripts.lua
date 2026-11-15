@@ -55,53 +55,23 @@ local function GetAoECount()
 end
 
 -- =====================================================
--- CRENÇA POR CAST para self-buffs (auras secretas em combate)
+-- AURAS PRÓPRIAS: crença por cast no core (AuraUp / RegisterAuraBelief).
 --   Righteous Fury:  30 min no Forever (regra vanilla; confirmar in-game)
 --   Holy Shield:     12 s (Forever; confirmar in-game)
 --   Seal of Command / Seal of Righteousness: 30 min
 -- =====================================================
 local SELF_BUFF_DURATIONS = { [25780] = 1800, [28153] = 12, [20915] = 1800, [20289] = 1800 }
-AddonTable.SelfBuffBelief = AddonTable.SelfBuffBelief or {}
 
-local Buff = SpellFlashAddon.CheckBuff
+if SpellFlashAddon and type(SpellFlashAddon.RegisterAuraBelief) == "function" then
+    for id, dur in pairs(SELF_BUFF_DURATIONS) do
+        SpellFlashAddon.RegisterAuraBelief({ { ids = { id }, duration = dur, unit = "player" } })
+    end
+end
 
 AddonTable.IsSelfBuffUp = function(spellID)
-    local name = SpellName(spellID)
-    if not name then return false end
-    if Buff then
-        local okB, up = pcall(Buff, name, "player")
-        if okB and up then return true end
-    end
-    if type(InCombatLockdown) == "function" and InCombatLockdown() then
-        local expires = AddonTable.SelfBuffBelief and AddonTable.SelfBuffBelief[spellID]
-        if expires and (type(GetTime) == "function") and GetTime() < expires then
-            return true
-        end
-    end
-    return false
+    if not (SpellFlashAddon and SpellFlashAddon.AuraUp) then return false end
+    return SpellFlashAddon.AuraUp("player", { spellID }, "buff")
 end
-
-local trackerFrame = CreateFrame("Frame")
-trackerFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-local function NormSpellName(s)
-    if type(s) ~= "string" then return nil end
-    return (s:gsub("%s*%b()%s*$", ""):gsub("%s*$", ""):lower())
-end
-local selfBuffNameNorm = {}
-for id in pairs(SELF_BUFF_DURATIONS) do
-    local n = NormSpellName(SpellName(id))
-    if n then selfBuffNameNorm[n] = id end
-end
-trackerFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "UNIT_SPELLCAST_SUCCEEDED" then
-        local nameNorm = NormSpellName(type(...) == "string" and select(1, ...) or nil)
-        local id = nameNorm and selfBuffNameNorm[nameNorm]
-        if id and type(GetTime) == "function" then
-            AddonTable.SelfBuffBelief = AddonTable.SelfBuffBelief or {}
-            AddonTable.SelfBuffBelief[id] = GetTime() + SELF_BUFF_DURATIONS[id]
-        end
-    end
-end)
 
 -- =====================================================
 -- ROTAÇÃO MESTRE
@@ -199,6 +169,22 @@ SpellFlashAddon.Spam[AddonName] = function(x)
             end
         end
         return
+    end
+
+    -- Interrupção de último recurso: racial (Pisada de Guerra) — inimigo conjurando
+    -- e Hammer of Justice (interrupt da classe) em CD; alvo precisa estar perto
+    local interruptUnavailable = false
+    if SpellFlashAddon and type(SpellFlashAddon.SpellCooldown) == "function" then
+        local cdLeft = SpellFlashAddon.SpellCooldown(853)
+        interruptUnavailable = (cdLeft and select(1, cdLeft) > 0) and true or false
+    end
+    local interruptRacial = AddonTable.ShouldUseRacial and AddonTable.ShouldUseRacial("interrupt", interruptUnavailable)
+    if interruptRacial then
+        local racialName = SpellName(interruptRacial)
+        if racialName and SpellFlashAddon.Flashable(racialName) then
+            SpellFlashAddon.FlashAction(racialName, "Aqua")
+            return
+        end
     end
 
     if isProt and AddonTable.RunPROTRotation then if AddonTable.RunPROTRotation(env) then return end

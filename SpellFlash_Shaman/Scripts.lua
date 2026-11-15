@@ -21,8 +21,6 @@ if not AddonTable.ShouldUseRacial then AddonTable.ShouldUseRacial = function() r
 if not AddonTable.ShouldUseTrinket then AddonTable.ShouldUseTrinket = function() return nil end end
 
 local L = AddonTable.L
-local Buff = SpellFlashAddon.CheckBuff
-local Debuff = SpellFlashAddon.CheckDebuff
 local HealthPercent = SpellFlashAddon.HealthPercent
 
 local function SpellName(id)
@@ -115,54 +113,30 @@ AddonTable.HookActionButtonPress = function()
 end
 
 -- =====================================================
--- CRENÇA POR CAST: Flame Shock (auras do alvo são secret em combate)
--- Mesmo padrão do Serpent Sting/Wing Clip do Hunter:
---   1) registra cast do jogador (RegisterUnitEvent + nome normalizado)
---   2) vincula ao SLOT do alvo (contador que muda em PLAYER_TARGET_CHANGED)
---   3) expira sozinho (duração do vanilla/Forever: 12 s + margem → 15 s)
---   4) na dúvida, NÃO sugere (ausência não é informação)
+-- AURAS (self-buffs e Flame Shock): crença por cast no core
+-- (AuraUp / RegisterAuraBelief). Só registramos os IDs aqui.
+--   Lightning Shield: 10 min (600 s)
+--   Flametongue/Windfury Weapon (imbue): 5 min (300 s)
 -- =====================================================
-local targetSlot = 0
-AddonTable.FlameShockBelief = AddonTable.FlameShockBelief or { applied = false, slot = 0, expires = 0 }
-local FLAMESHOCK_BELIEF_DURATION = 15
-
--- Crença por cast para os SELF-BUFFS (auras secretas em combate; mesma receita de 07-auras-secretas-e-crenca.md):
---   Lightning Shield: 10 min de aura no vanilla/Forever → 600 s
---   Flametongue/Windfury Weapon (imbue): 5 min → 300 s
---   API positiva (fora de combate) vence a crença; na dúvida, NÃO sugere.
 local SELF_BUFF_DURATIONS = { [324] = 600, [8024] = 300, [8232] = 300 }
-AddonTable.SelfBuffBelief = AddonTable.SelfBuffBelief or {}
+local FLAME_SHOCK_IDS = { 8050, 8052, 8053, 10447, 10448, 29228 }
+AddonTable.FLAME_SHOCK_IDS = FLAME_SHOCK_IDS
+
+if SpellFlashAddon and type(SpellFlashAddon.RegisterAuraBelief) == "function" then
+    for id, dur in pairs(SELF_BUFF_DURATIONS) do
+        SpellFlashAddon.RegisterAuraBelief({ { ids = { id }, duration = dur, unit = "player" } })
+    end
+    SpellFlashAddon.RegisterAuraBelief({ { ids = FLAME_SHOCK_IDS, duration = 15, unit = "target" } })
+end
 
 AddonTable.IsSelfBuffUp = function(spellID)
-    local name = SpellName(spellID)
-    if not name then return false end
-    -- 1) API legível (fora de combate) vence sempre
-    if Buff then
-        local okB, up = pcall(Buff, name, "player")
-        if okB and up then return true end
-    end
-    -- 2) Em combate a leitura vem secret → crença do próprio cast decide
-    if type(InCombatLockdown) == "function" and InCombatLockdown() then
-        local expires = AddonTable.SelfBuffBelief and AddonTable.SelfBuffBelief[spellID]
-        if expires and (type(GetTime) == "function") and GetTime() < expires then
-            return true
-        end
-    end
-    return false
+    if not (SpellFlashAddon and SpellFlashAddon.AuraUp) then return false end
+    return SpellFlashAddon.AuraUp("player", { spellID }, "buff")
 end
 
 AddonTable.IsFlameShockUp = function(unit)
-    unit = unit or "target"
-    if unit == "target" then
-        local b = AddonTable.FlameShockBelief
-        if b and b.applied and b.slot == targetSlot then
-            if type(GetTime) == "function" and GetTime() < b.expires then
-                return true
-            end
-            b.applied = false
-        end
-    end
-    return Debuff and Debuff(SpellName(8050), unit)
+    if not (SpellFlashAddon and SpellFlashAddon.AuraUp) then return false end
+    return SpellFlashAddon.AuraUp(unit or "target", FLAME_SHOCK_IDS, "debuff")
 end
 
 -- =====================================================
@@ -176,51 +150,6 @@ AddonTable.IsTotemActiveByName = function(name)
     end
     return false
 end
-
-local trackerFrame = CreateFrame("Frame")
-trackerFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-trackerFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
-trackerFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-
--- Nomes normalizados para casar casts (chave: nome base minúsculo, sem sufixo de grau)
-local function NormSpellName(s)
-    if type(s) ~= "string" then return nil end
-    return (s:gsub("%s*%b()%s*$", ""):gsub("%s*$", ""):lower())
-end
-local flameNameNorm = NormSpellName(SpellName(8050))
-local selfBuffNameNorm = {} -- nome normalizado -> spellID
-for id in pairs(SELF_BUFF_DURATIONS) do
-    local n = NormSpellName(SpellName(id))
-    if n then selfBuffNameNorm[n] = id end
-end
-
-trackerFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_TARGET_CHANGED" then
-        targetSlot = targetSlot + 1
-        AddonTable.FlameShockBelief.applied = false
-    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
-        local _, _, spellID = ...
-        if type(spellID) == "number" and C_Spell and type(C_Spell.GetSpellInfo) == "function" then
-            local ok, info = pcall(C_Spell.GetSpellInfo, spellID)
-            local castName = ok and info and info.name
-            local norm = NormSpellName(castName)
-            if norm then
-                if norm == flameNameNorm then
-                    AddonTable.FlameShockBelief.applied = true
-                    AddonTable.FlameShockBelief.slot = targetSlot
-                    AddonTable.FlameShockBelief.expires = (type(GetTime) == "function" and GetTime() or 0) + FLAMESHOCK_BELIEF_DURATION
-                end
-                local buffID = selfBuffNameNorm[norm]
-                if buffID then
-                    if not AddonTable.SelfBuffBelief then AddonTable.SelfBuffBelief = {} end
-                    AddonTable.SelfBuffBelief[buffID] = (type(GetTime) == "function" and GetTime() or 0) + SELF_BUFF_DURATIONS[buffID]
-                end
-            end
-        end
-    elseif event == "PLAYER_REGEN_ENABLED" then
-        -- fim de combate: nada a limpar por ora (crenças já expiram sozinhas)
-    end
-end)
 
 -- =====================================================
 -- CONTAGEM DE INIMIGOS (nameplates — sem combat log)
@@ -382,6 +311,22 @@ SpellFlashAddon.Spam[AddonName] = function(x)
             end
         end
         if TryFlash(8143, "Aqua", function() return true end, "Tremor Totem") then return end
+    end
+
+    -- Interrupção de último recurso: racial (Pisada de Guerra) — inimigo conjurando
+    -- e Earth Shock (interrupt da classe) em CD/indisponível; alvo precisa estar perto
+    local interruptUnavailable = false
+    if SpellFlashAddon and type(SpellFlashAddon.SpellCooldown) == "function" then
+        local cdLeft = SpellFlashAddon.SpellCooldown(8042)
+        interruptUnavailable = (cdLeft and select(1, cdLeft) > 0) and true or false
+    end
+    local interruptRacial = AddonTable.ShouldUseRacial and AddonTable.ShouldUseRacial("interrupt", interruptUnavailable)
+    if interruptRacial then
+        local racialName = SpellName(interruptRacial)
+        if racialName and SpellFlashAddon.Flashable(racialName) then
+            SpellFlashAddon.FlashAction(racialName, "Aqua")
+            return
+        end
     end
 
     -- =====================================================

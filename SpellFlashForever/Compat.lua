@@ -114,6 +114,161 @@ local function AuraWalk(unit, filter, max, fn)
     return false, true
 end
 
+-- ---------------------------------------------------------------------------
+-- Crença genérica por cast para auras (self e ALVO). Qualquer módulo pode
+-- registrar famílias de spells que aplicam aura: o core rastreia o cast e
+-- guarda uma crença com timestamp. Em combate (auras secret) a crença é o
+-- que decide; fora de combate a API positiva vence e reforça a crença.
+-- Uso (módulos):
+--   SpellFlashAddon.RegisterAuraBelief({
+--       { ids = { 1126, 5232 }, duration = 3600, unit = "auto" },  -- Mark
+--   })
+--   SpellFlashAddon.AuraUp("target", { 1126, 5232 }, "buff")  -- true/false
+-- unit:
+--   "player" → acredita no jogador
+--   "target" → acredita no ALVO atual (GUID no momento do cast)
+--   "auto"   → alvo atual se existir e for ALIADO; senão player
+-- kind: "buff" (CheckBuff) ou "debuff" (CheckDebuff)
+-- ---------------------------------------------------------------------------
+s.AuraBeliefs = s.AuraBeliefs or {} -- ["player"|"slot:<N>"] = { [spellID] = expires }
+s.TrackedAuras = s.TrackedAuras or {}
+
+-- Slot de alvo: incrementado a cada PLAYER_TARGET_CHANGED. O GUID do alvo é
+-- secret em dungeon/raid (não pode ser usado como chave); o slot reaproveita
+-- o padrão comprovado Hunter/Shaman (map restriction-safe).
+local targetSlot = 0
+
+local function AuraBeliefKey(unit)
+    unit = unit or "target"
+    if unit == "player" then return "player" end
+    return "slot:" .. tostring(targetSlot)
+end
+
+function s.RegisterAuraBelief(entries)
+    for _, e in ipairs(entries or {}) do
+        if type(e) == "table" and type(e.ids) == "table" and type(e.duration) == "number" then
+            local names = {}
+            for _, id in ipairs(e.ids) do
+                local n = id and s.SpellName and s.SpellName(id)
+                if type(n) == "string" and n ~= "" then
+                    names[n:gsub("%s*%b()%s*$", ""):gsub("%s+$", ""):lower()] = id
+                end
+            end
+            e.names = names
+            s.TrackedAuras[#s.TrackedAuras + 1] = e
+        end
+    end
+end
+
+local function AuraBeliefRearm(unit, id, duration)
+    if type(duration) ~= "number" then return end
+    local key = AuraBeliefKey(unit)
+    if not key then return end
+    s.AuraBeliefs[key] = s.AuraBeliefs[key] or {}
+    local now = type(GetTime) == "function" and GetTime() or 0
+    s.AuraBeliefs[key][id] = now + duration
+end
+
+-- Crença pura (sem API). Útil quando você só quer saber se o CAST foi visto.
+function s.AuraBeliefUp(unit, id)
+    local key = AuraBeliefKey(unit)
+    if not key then return false end
+    local list = s.AuraBeliefs[key]
+    if type(list) ~= "table" then return false end
+    local exp = list[id]
+    if not exp or type(GetTime) ~= "function" then return false end
+    return GetTime() < exp
+end
+
+-- API positiva + crença. Reforça a crença quando a API confirma.
+function s.AuraUp(unit, ids, kind)
+    if type(ids) ~= "table" or #ids == 0 then return false end
+    local now = type(GetTime) == "function" and GetTime() or 0
+    local check = (kind == "debuff") and s.CheckDebuff or s.CheckBuff
+    if check then
+        for _, id in ipairs(ids) do
+            local n = id and s.SpellName and s.SpellName(id)
+            if type(n) == "string" and n ~= "" then
+                local ok, up = pcall(check, n, unit)
+                if ok and up == true then
+                    -- reforça a crença com a duração registrada para este id
+                    for _, e in ipairs(s.TrackedAuras) do
+                        for _, tid in ipairs(e.ids) do
+                            if tid == id then
+                                AuraBeliefRearm(unit, id, e.duration)
+                                break
+                            end
+                        end
+                    end
+                    return true
+                end
+            end
+        end
+    end
+    for _, id in ipairs(ids) do
+        if s.AuraBeliefUp(unit, id) then return true end
+    end
+    return false
+end
+
+local auraBeliefTracker = CreateFrame("Frame")
+auraBeliefTracker:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+auraBeliefTracker:RegisterEvent("PLAYER_TARGET_CHANGED")
+auraBeliefTracker:SetScript("OnEvent", function(self, event, ...)
+    if event == "PLAYER_TARGET_CHANGED" then
+        targetSlot = targetSlot + 1
+        return
+    end
+    if event ~= "UNIT_SPELLCAST_SUCCEEDED" then return end
+    local now = type(GetTime) == "function" and GetTime() or 0
+    -- Assinatura do Forever: (unit, castGUID, spellID). O spellID é secret
+    -- number — não comparamos IDs; chamamos C_Spell.GetSpellInfo com ele
+    -- (o que a doc autoriza) e casamos pelo NOME localizado normalizado.
+    -- Alguns clientes mandam o nome como string — cobrimos os dois casos.
+    for arg = 1, select("#", ...) do
+        local v = select(arg, ...)
+        local castName
+        if type(v) == "number" and C_Spell and type(C_Spell.GetSpellInfo) == "function" then
+            local ok, info = pcall(C_Spell.GetSpellInfo, v)
+            castName = ok and info and info.name
+        elseif type(v) == "string" then
+            castName = v
+        end
+        if type(castName) == "string" then
+            local base = castName:gsub("%s*%b()%s*$", ""):gsub("%s+$", ""):lower()
+            if base ~= "" then
+                for _, e in ipairs(s.TrackedAuras) do
+                    local id = e.names and e.names[base]
+                    if not id then
+                        -- fallback: match por prefixo do nome (clientes sem rank na string)
+                        for _, tid in ipairs(e.ids) do
+                            local n = s.SpellName and s.SpellName(tid)
+                            if type(n) == "string" and n:lower():find(base, 1, true) == 1 then id = tid; break end
+                        end
+                    end
+                    if id then
+                        local unit = e.unit or "auto"
+                        local key
+                        if unit == "player" then key = "player"
+                        elseif unit == "target" then key = AuraBeliefKey("target")
+                        else
+                            if UnitExists and UnitExists("target") and UnitIsFriend and UnitIsFriend("player", "target") then
+                                key = AuraBeliefKey("target")
+                            else
+                                key = "player"
+                            end
+                        end
+                        if key then
+                            s.AuraBeliefs[key] = s.AuraBeliefs[key] or {}
+                            s.AuraBeliefs[key][id] = now + e.duration
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
 local function AuraNameMatches(auraName, wanted)
     if type(auraName) ~= "string" or type(wanted) ~= "string" then return false end
     return StripRankLocal(auraName):lower() == StripRankLocal(wanted):lower()
@@ -321,6 +476,7 @@ local FAMILIES = {
     { 1309595 },                                                  -- Shadow Word: Death (novo Forever; VERIFICAR)
     { 15407 },                                                    -- Mind Flay (talento Shadow)
     { 15286 },                                                    -- Vampiric Embrace (talento Shadow)
+    { 99, 1735, 9490, 9747, 9898 },                                -- Demoralizing Roar (5 ranks, Druid BEAR)
     { 585 },                                                      -- Smite (único; ranks posteriores não nomeados)
     { 14914 },                                                    -- Holy Fire (talento)
     { 402174 },                                                   -- Penance (talento; novo; VERIFICAR)

@@ -171,6 +171,20 @@ SpellFlashAddon.Spam[AddonName] = function(x)
         return
     end
 
+    -- Interrupção de último recurso: racial (Pisada de Guerra) — inimigo conjurando
+    -- e Shield Bash (interrupt da classe) indisponível (sem escudo ou em CD); alvo perto
+    local shieldBashCD = AddonTable.SpellCooldown and AddonTable.SpellCooldown(72)
+    local interruptUnavailable = (not (AddonTable.IsShieldEquipped and AddonTable.IsShieldEquipped()))
+        or (shieldBashCD and select(1, shieldBashCD) > 0)
+    local interruptRacial = AddonTable.ShouldUseRacial and AddonTable.ShouldUseRacial("interrupt", interruptUnavailable)
+    if interruptRacial then
+        local racialName = SpellName(interruptRacial)
+        if racialName and SpellFlashAddon.Flashable(racialName) then
+            SpellFlashAddon.FlashAction(racialName, "Aqua")
+            return
+        end
+    end
+
     -- Interrupção (Pummel/Berserker Stance) agora faz parte da declaração
     -- (prefixo comum WarriorCommonNodes, editável em /sf → Warrior).
 

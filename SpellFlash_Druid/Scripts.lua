@@ -106,85 +106,31 @@ local function IsBehind()
 end
 
 -- =====================================================
--- SELF-BUFFS: crença por cast (aulas secretas em combate) — mesma receita dos
--- aspectos/Lightning Shield (07-auras-secretas-e-crenca.md).
---   Mark of the Wild: 1h no Forever
---   Thorns: 10 min
+-- AURAS (self-buffs, buffs de alvo, debuffs ofensivos):
+-- a crença por cast vive no core (Compat.lua) — aqui só
+-- registramos o que este módulo usa e expomos wrappers.
 -- =====================================================
 local MARK_IDS    = { 1126, 5232, 6756, 5234, 8907, 9884, 9885 }
 local THORNS_IDS  = { 467,  782,  1075, 8914, 9756, 9910 }
 local ENRED_IDS   = { 16689, 16810, 16811, 16812, 16813, 17329 }
-local SELF_BUFF_DURATIONS = {}
-for _, id in ipairs(MARK_IDS)   do SELF_BUFF_DURATIONS[id] = 3600 end
-for _, id in ipairs(THORNS_IDS) do SELF_BUFF_DURATIONS[id] = 600  end
-for _, id in ipairs(ENRED_IDS)  do SELF_BUFF_DURATIONS[id] = 45   end
-AddonTable.SelfBuffBelief = AddonTable.SelfBuffBelief or {}
+local ROAR_IDS    = { 99, 1735, 9490, 9747, 9898 }
+AddonTable.ROAR_IDS = ROAR_IDS
 
-local Buff = SpellFlashAddon.CheckBuff
-local isInCombat = (type(InCombatLockdown) == "function") and InCombatLockdown or function() return false end
-
-local function PrimeSelfBuffBelief(selfList)
-    -- Fora de combate as auras são legíveis: reforça a crença (e o buff realmente está).
-    for _, id in ipairs(selfList) do
-        local name = SpellName(id)
-        if name and Buff then
-            local ok, up = pcall(Buff, name, "player")
-            if ok and up then
-                AddonTable.SelfBuffBelief[id] = (type(GetTime) == "function" and GetTime() or 0) + SELF_BUFF_DURATIONS[id]
-                return true
-            end
-        end
-    end
-    return false
+if SpellFlashAddon and type(SpellFlashAddon.RegisterAuraBelief) == "function" then
+    SpellFlashAddon.RegisterAuraBelief({
+        { ids = MARK_IDS,   duration = 3600, unit = "auto"   }, -- alvo aliado ou self
+        { ids = THORNS_IDS, duration = 600,  unit = "auto"   }, -- alvo aliado ou self
+        { ids = ENRED_IDS,  duration = 45,   unit = "player" }, -- self-only
+        { ids = ROAR_IDS,   duration = 30,   unit = "target" }, -- alvo ofensivo
+    })
 end
 
-local function IsAnySelfBuffUp(selfList)
-    -- 1) Em combate a leitura vem secret → checa a crença do próprio cast (ou da última vez que sabemos).
-    if isInCombat() then
-        for _, id in ipairs(selfList) do
-            local expires = AddonTable.SelfBuffBelief and AddonTable.SelfBuffBelief[id]
-            if expires and type(GetTime) == "function" and GetTime() < expires then
-                return true
-            end
-        end
-        return false
-    end
-    -- 2) Fora de combate: API positiva vence sempre (e reforça a crença p/ não recomendar no próximo combate).
-    if PrimeSelfBuffBelief(selfList) then return true end
-    -- 3) Mesmo assim, aceite a crença recém-registrada como válida (cast no início da sessão).
-    for _, id in ipairs(selfList) do
-        local expires = AddonTable.SelfBuffBelief and AddonTable.SelfBuffBelief[id]
-        if expires and type(GetTime) == "function" and GetTime() < expires then
-            return true
-        end
-    end
-    return false
-end
-AddonTable.IsSelfMarkUp   = function() return IsAnySelfBuffUp(MARK_IDS) end
-AddonTable.IsSelfThornsUp = function() return IsAnySelfBuffUp(THORNS_IDS) end
-AddonTable.IsSelfEnredUp  = function() return IsAnySelfBuffUp(ENRED_IDS) end
-
-local trackerFrame = CreateFrame("Frame")
-trackerFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-local function NormSpellName(s)
-    if type(s) ~= "string" then return nil end
-    return (s:gsub("%s*%b()%s*$", ""):gsub("%s*$", ""):lower())
-end
-local selfBuffNorm = {}
-for id in pairs(SELF_BUFF_DURATIONS) do
-    local n = NormSpellName(SpellName(id))
-    if n then selfBuffNorm[n] = id end
-end
-trackerFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "UNIT_SPELLCAST_SUCCEEDED" then
-        local nameNorm = NormSpellName(type(...) == "string" and select(1, ...) or nil)
-        local id = nameNorm and selfBuffNorm[nameNorm]
-        if id and type(GetTime) == "function" then
-            AddonTable.SelfBuffBelief = AddonTable.SelfBuffBelief or {}
-            AddonTable.SelfBuffBelief[id] = GetTime() + SELF_BUFF_DURATIONS[id]
-        end
-    end
-end)
+AddonTable.IsSelfMarkUp   = function() return SpellFlashAddon and SpellFlashAddon.AuraUp and SpellFlashAddon.AuraUp("player", MARK_IDS, "buff") or false end
+AddonTable.IsSelfThornsUp = function() return SpellFlashAddon and SpellFlashAddon.AuraUp and SpellFlashAddon.AuraUp("player", THORNS_IDS, "buff") or false end
+AddonTable.IsSelfEnredUp  = function() return SpellFlashAddon and SpellFlashAddon.AuraUp and SpellFlashAddon.AuraUp("player", ENRED_IDS, "buff") or false end
+AddonTable.IsTargetMarkUp   = function() return SpellFlashAddon and SpellFlashAddon.AuraUp and SpellFlashAddon.AuraUp("target", MARK_IDS, "buff") or false end
+AddonTable.IsTargetThornsUp = function() return SpellFlashAddon and SpellFlashAddon.AuraUp and SpellFlashAddon.AuraUp("target", THORNS_IDS, "buff") or false end
+AddonTable.IsRoarUp         = function() return SpellFlashAddon and SpellFlashAddon.AuraUp and SpellFlashAddon.AuraUp("target", ROAR_IDS, "debuff") or false end
 
 -- =====================================================
 -- ROTATION SPECS (declaradas como DADO; editor /sf → Druid)
@@ -272,6 +218,8 @@ SpellFlashAddon.Spam[AddonName] = function(x)
         form = GetDruidForm(),
         combo = GetComboPoints(),
         mounted = IsPlayerMounted(),
+        targetExists = UnitExists and UnitExists("target") and true or false,
+        targetFriendlyAlive = (SpellFlashAddon and SpellFlashAddon.UnitFriendlyAndAlive and SpellFlashAddon.UnitFriendlyAndAlive("target")) or false,
     }
 
     -- =====================================================
@@ -365,6 +313,22 @@ SpellFlashAddon.Spam[AddonName] = function(x)
             end
         end
         return
+    end
+
+    -- Interrupção de último recurso: racial (Pisada de Guerra) — inimigo conjurando
+    -- e Bash (interrupt da classe) em CD/indisponível; alvo precisa estar perto
+    local interruptUnavailable = false
+    if SpellFlashAddon and type(SpellFlashAddon.SpellCooldown) == "function" then
+        local cdLeft = SpellFlashAddon.SpellCooldown(5211)
+        interruptUnavailable = (cdLeft and select(1, cdLeft) > 0) and true or false
+    end
+    local interruptRacial = AddonTable.ShouldUseRacial and AddonTable.ShouldUseRacial("interrupt", interruptUnavailable)
+    if interruptRacial then
+        local racialName = SpellName(interruptRacial)
+        if racialName and SpellFlashAddon.Flashable(racialName) then
+            SpellFlashAddon.FlashAction(racialName, "Aqua")
+            return
+        end
     end
 
     -- =====================================================

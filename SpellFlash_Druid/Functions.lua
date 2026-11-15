@@ -16,7 +16,6 @@ AddonTable.ItemCastable = AddonTable.ItemCastable or (SFBF and SFBF.CopyTable an
 print(string.format(L.mod_loaded, "Druid", L.mod_load_functions))
 
 local function SpellName(id) return AddonTable.SpellName(id) end
-local Buff = SpellFlashAddon.CheckBuff
 local CheckCastable = SpellFlashAddon.CheckIfSpellCastable
 
 -- Distância melee relevante: nil/true = pode usar; false = fora de alcance
@@ -256,6 +255,14 @@ AddonTable.Castable["Barkskin"] = function()
     z.Buff = z.SpellName
     return CheckCastable(z)
 end
+AddonTable.Castable["Demoralizing Roar"] = function()
+    local z = {}
+    z.SpellID = 99                      -- rank 1; o core resolve o maior rank conhecido pela família {99,1735,9490,9747,9898}
+    z.SpellName = SpellName(99)
+    z.Debuff = z.SpellName              -- não sugere se o alvo já tiver o debuff (qualquer fonte)
+    z.EnemyTargetNeeded = 1
+    return CheckCastable(z)
+end
 AddonTable.Castable["Innervate"] = function()
     local z = {}
     z.SpellName = SpellName(29166)
@@ -292,12 +299,20 @@ P["mark_missing"]    = { label = L.pred_mark_missing,
     fn = function(env)
         if env.form == 1 or env.form == 2 then return false end -- não pode em Cat/Bear
         if env.mounted then return false end                     -- não sugere montado
+        if env.targetExists then
+            -- alvo selecionado: sugere só se for aliado vivo e estiver SEM o buff
+            return (env.targetFriendlyAlive and not (AddonTable.IsTargetMarkUp and AddonTable.IsTargetMarkUp())) and true or false
+        end
+        -- sem alvo selecionado: self-buff, só se o jogador estiver SEM o buff
         return (AddonTable.IsSelfMarkUp and AddonTable.IsSelfMarkUp() or false) == false
     end }
 P["thorns_missing"]  = { label = L.pred_thorns_missing,
     fn = function(env)
         if env.form == 1 or env.form == 2 then return false end -- não pode em Cat/Bear
         if env.mounted then return false end                     -- não sugere montado
+        if env.targetExists then
+            return (env.targetFriendlyAlive and not (AddonTable.IsTargetThornsUp and AddonTable.IsTargetThornsUp())) and true or false
+        end
         return (AddonTable.IsSelfThornsUp and AddonTable.IsSelfThornsUp() or false) == false
     end }
 P["enred_missing"]  = { label = L.pred_natures_grasp_missing,
@@ -305,12 +320,20 @@ P["enred_missing"]  = { label = L.pred_natures_grasp_missing,
         if env.mounted then return false end                     -- não sugere montado
         return (AddonTable.IsSelfEnredUp and AddonTable.IsSelfEnredUp() or false) == false
     end }
+P["demoralizing_roar_missing"] = { label = L.pred_roar_missing,
+    fn = function(env)
+        if env.form ~= 2 then return false end                   -- Rugido só em Bear
+        if not env.hasActiveEnemy then return false end          -- precisa de inimigo
+        if AddonTable.IsRoarUp and AddonTable.IsRoarUp() then return false end
+        return true
+    end }
 
 -- Prefixo COMUM a todas as specs de Druid: self-buffs do Druid.
 AddonTable.DruidCommonNodes = {
     { id = "mark_of_the_wild", spellID = 1126, name = "Mark of the Wild", color = "White", condition = "mark_missing", passthrough = true },
     { id = "thorns",           spellID = 467,  name = "Thorns",          color = "White", condition = "thorns_missing", passthrough = true },
     { id = "natures_grasp",    spellID = 16689, name = "Nature's Grasp", color = "White", condition = "enred_missing", passthrough = true },
+    { id = "demoralizing_roar", spellID = 99,  name = "Demoralizing Roar", color = "Green", condition = "demoralizing_roar_missing", passthrough = true }, -- só Bear; passthrough: brilha junto com a rotação
 }
 
 function AddonTable.ConcatCommonNodes(common, nodes)
