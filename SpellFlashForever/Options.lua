@@ -285,6 +285,22 @@ local function BuildGeneralTab(parent)
     )
     y = y - 36
 
+    -- Avisos de habilidade com rank desatualizado na action bar (pré-marcado)
+    CreateCheck(parent, "SFBF_GUI_BarRankWarnings", L.opt_bar_rank_warnings,
+        nil, 16, y,
+        function()
+            local db = SpellFlashForeverDB and SpellFlashForeverDB.handle
+            if db and db.bar_rank_warnings == false then return false end
+            return true
+        end,
+        function(val)
+            local db = SpellFlashForeverDB
+            db.handle = db.handle or {}
+            db.handle.bar_rank_warnings = val and nil or false
+        end
+    )
+    y = y - 36
+
     -- Botão Testar Flash
     local testBtn = CreateFrame("Button", "SFBF_GUI_TestButton", parent, "UIPanelButtonTemplate")
     testBtn:SetPoint("TOPLEFT", 16, y)

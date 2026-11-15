@@ -75,6 +75,19 @@ AddonTable.OnSpinPressed = function(button)
     local actionType, id = GetActionInfo(tonumber(action) or action)
     if actionType == "spell" and id and id ~= "" then
         AddonTable.PressSuppress[id] = GetTime() + 0.6
+        -- Belt & braces para o bug reportado pela comunidade (imbue recomendado
+        -- para sempre): se o jogador acabou de conjurar um imbue/shield, registra
+        -- crença longa pelo botão (resolve mesmo se a crença por cast falhar).
+        if type(id) == "number" and SpellFlashAddon then
+            if type(SpellFlashAddon.FamilyBase) == "function" and type(SpellFlashAddon.AuraBeliefs) == "table" then
+                local base = SpellFlashAddon.FamilyBase(id)
+                if base == 8024 or base == 8232 or base == 324 then
+                    local beliefs = SpellFlashAddon.AuraBeliefs
+                    beliefs["player"] = beliefs["player"] or {}
+                    beliefs["player"][base] = GetTime() + 600 -- imbue/shield duram ≥ 5 min
+                end
+            end
+        end
     end
 end
 

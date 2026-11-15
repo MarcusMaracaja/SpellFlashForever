@@ -971,6 +971,80 @@ driver:SetScript("OnEvent", function(self, event)
     end
 end)
 
+-- ===========================================================================
+-- Utilitários públicos da família de ranks + aviso de habilidade desatualizada
+-- ===========================================================================
+-- FamilyOf(id) -> (família, índiceDoSpellID) ou nil
+s.FamilyOf = function(id)
+    local fam = familyOf[id]
+    if not fam then return nil end
+    for i, pid in ipairs(fam) do
+        if pid == id then return fam, i end
+    end
+    return nil
+end
+s.HighestKnownRankInFamily = HighestKnownInFamily
+-- Menor ID da família (base) — usado para casar casts de ranks diferentes ao mesmo
+-- belief slot (imbues do Shaman).
+s.FamilyBase = function(id)
+    local fam = familyOf[id]
+    if not fam then return id end
+    local base = fam[1]
+    for _, pid in ipairs(fam) do if pid < base then base = pid end end
+    return base
+end
+
+-- Compara as habilidades na action bar com o que o jogador conhece no grimório
+-- (FAMILIES). Cada barra aparece com um rank; se for menor que o conhecido,
+-- devolve lista { name(nome base), barRank, knownRank }.
+local function BarActionSpells()
+    local list = {}
+    if type(GetActionInfo) ~= "function" then return list end
+    for slot = 1, 180 do
+        local okSlot, actionType, id = pcall(GetActionInfo, slot)
+        if okSlot and actionType == "spell" and type(id) == "number" then
+            local okB, fam, idx = pcall(s.FamilyOf, id)
+            if okB and fam and idx then
+                local known = HighestKnownInFamily(fam)
+                if known then
+                    local knownIdx
+                    for i, pid in ipairs(fam) do
+                        if pid == known then knownIdx = i break end
+                    end
+                    if knownIdx and knownIdx > idx then
+                        list[#list + 1] = { spellID = id, name = s.SpellName and s.SpellName(id) or tostring(id), barRank = idx, knownRank = knownIdx, knownID = known }
+                    end
+                end
+            end
+        end
+    end
+    return list
+end
+
+-- Dispara os avisos para abilities na barra com rank menor que o conhecido.
+-- Retorna quantos foram encontrados (permite uso pelo chat/toggle da aba).
+function s.CheckActionBarRanks(printOut)
+    if printOut == nil then printOut = true end
+    local db = _G.SpellFlashForeverDB
+    if db and db.handle and db.handle.bar_rank_warnings == false then return 0 end
+    local list = BarActionSpells()
+    if printOut then
+        for _, entry in ipairs(list) do
+            local base = entry.name:gsub("%s*%b()%s*$", ""):gsub("%s+$", "")
+            DEFAULT_CHAT_FRAME:AddMessage(string.format(L.bar_rank_warn, base, entry.barRank, entry.knownRank))
+        end
+    end
+    return #list
+end
+
+local rankCheckLoader = CreateFrame("Frame")
+rankCheckLoader:RegisterEvent("PLAYER_ENTERING_WORLD")
+rankCheckLoader:SetScript("OnEvent", function()
+    if s.CheckActionBarRanks then
+        s.CheckActionBarRanks(true)
+    end
+end)
+
 -- ---------------------------------------------------------------------------
 -- Global compatível com os módulos WotLK
 -- ---------------------------------------------------------------------------

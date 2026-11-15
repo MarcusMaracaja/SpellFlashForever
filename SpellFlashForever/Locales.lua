@@ -115,6 +115,8 @@ local ptBR = {
     opt_flash_bright  = "Brilho / Opacidade do Flash",
     opt_flash_border_width = "Largura da moldura",
     opt_flash_border_width_tt = "Apenas no modo de brilho de contorno: largura extra da moldura em pixels (0 = rente ao botão).",
+    opt_bar_rank_warnings = "Avisar sobre habilidades desatualizadas na barra de ação",
+    bar_rank_warn = "|cffffcc00[SpellFlash Forever]|r %s na barra de ação está no rank %d; você já conhece o rank %d. Arraste do grimório para atualizar.",
     opt_minimap       = "Mostrar botão no minimapa",
     opt_minimap_tt    = "Exibe um botão no minimapa que abre/fecha este menu. Arraste-o para reposicionar. Use /sfminimap para igualmente esconder/mostrar.",
     opt_keybutton     = "Mostrar botão com a tecla da habilidade",
@@ -519,6 +521,8 @@ do
     enUS.opt_flash_bright  = "Flash Brightness / Opacity"
     enUS.opt_flash_border_width = "Border width"
     enUS.opt_flash_border_width_tt = "Border glow mode only: extra width of the frame in pixels (0 = flush with the button)."
+    enUS.opt_bar_rank_warnings = "Warn about outdated abilities on the action bar"
+    enUS.bar_rank_warn = "|cffffcc00[SpellFlash Forever]|r %s on the action bar is Rank %d; you already know Rank %d. Drag it from the spellbook to update."
     enUS.opt_minimap       = "Show minimap button"
     enUS.opt_minimap_tt    = "Shows a minimap button that opens/closes this menu. Drag it to reposition. Use /sfminimap to hide/show it too."
     enUS.opt_keybutton     = "Show button with the ability key"
