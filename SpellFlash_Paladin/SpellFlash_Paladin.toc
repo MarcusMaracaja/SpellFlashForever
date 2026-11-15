@@ -3,7 +3,7 @@
 ## Title: SpellFlash Forever: Paladin
 ## Notes: Protection (tank) and Retribution (DPS) rotation assistant for WoW Forever. Holy out of scope. | Assistente de rotação Paladin (Protection e Retribution) para o WoW Forever. Holy fora de escopo.
 ## Author: Marcus (Forever)
-## Version: 1.6.1
+## Version: 1.7.0
 ## X-Category: Damage rotations
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## DefaultState: Enabled
