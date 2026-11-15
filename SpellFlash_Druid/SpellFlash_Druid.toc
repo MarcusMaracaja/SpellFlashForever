@@ -2,7 +2,7 @@
 ## Title: SpellFlash Forever: Druid
 ## Notes: Feral Cat / Bear, Balance and Restoration rotation assistant for WoW Forever. | Assistente de rotação Druid (Feral Gato/Urso, Balance, Restoration) para o WoW Forever.
 ## Author: Marcus (SpellFlash original: Exalter)
-## Version: 1.6.0
+## Version: 1.6.1
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## DefaultState: Enabled
 ## Dependencies: SpellFlashForever

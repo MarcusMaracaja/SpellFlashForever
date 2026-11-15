@@ -2,7 +2,7 @@
 ## Title: SpellFlash Forever: Hunter
 ## Notes: Beast Mastery / Marksmanship / Survival rotation assistant for WoW Forever. | Assistente de rotação Hunter para o WoW Forever (Beast Mastery/Marksmanship/Survival).
 ## Author: Marcus (SpellFlash original: SF Community)
-## Version: 1.6.0
+## Version: 1.6.1
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## Dependencies: SpellFlashForever
 

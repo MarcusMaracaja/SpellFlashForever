@@ -144,9 +144,13 @@ end
 -- =====================================================
 AddonTable.IsTotemActiveByName = function(name)
     if type(name) ~= "string" or name == "" then return false end
+    if type(GetTotemInfo) ~= "function" then
+        -- cliente sem a API (ou nome fora do livro): não dá para afirmar — fail-safe false
+        return false
+    end
     for i = 1, 4 do
-        local haveTotem, totemName = GetTotemInfo(i)
-        if haveTotem and totemName == name then return true end
+        local ok, haveTotem, totemName = pcall(GetTotemInfo, i)
+        if ok and haveTotem and totemName == name then return true end
     end
     return false
 end

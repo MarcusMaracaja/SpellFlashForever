@@ -23,7 +23,10 @@ local function SpellName(id) return AddonTable.SpellName(id) end
 local AddonCastable = AddonTable.Castable
 
 -- =====================================================
--- BUFFS PESSOAIS (só recomendados fora de combate ou jogo ativo)
+-- BUFFS (imbues/escudo): recomendados sempre (a detecção de "já tem"
+-- avalia antes/durante o combate) — a crença de cast no core (AuraUp,
+-- H-0168) é o que bloqueia a sugestão após o cast; a API positiva fura
+-- primeiro fora de combate.
 -- =====================================================
 AddonCastable["Lightning Shield"] = function()
     local z = {}
