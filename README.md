@@ -18,11 +18,17 @@ now flash**, with colors per function (damage, AoE, interrupt, defensive, utilit
 It does **not** press the key for you — it just flashes the button. You stay in
 control.
 
-### What's new in 1.7.0
+### What's new in 1.8.0
 
-- **General tab settings now persist across sessions.** The flash Size/Brightness sliders were moved into the same proven storage used by every other option, so your setup survives `/reload` and relogs.
-- **New option — "Border width"** (General tab): in the **border glow** mode, increase the frame width in pixels (0–60, default 12; 0 = old look).
-- **All 6 TOCs declare Version 1.7.0.** Previously: full bilingual support, all buffs suggested correctly after cast, Tauren's War Stomp as last-resort interrupt.
+- **Shaman — weapon imbue defense in layers.**
+  After pressing the imbue button (Flametongue/Windfury/Lightning Shield) the module now registers a long (≥10 min) belief, so the addon can never show "still missing the imbue" forever — no matter the client's aura-secret quirks.
+- **New — outdated rank warnings on the action bar (chat).**
+  At login, the addon prints a localized message for every ability on the bar whose rank is lower than the one in your spellbook, with both rank numbers. Turn it off anytime in **General**.
+- **General tab — new checkbox** (pre-checked): _Warn about outdated abilities on the action bar_ / _Avisar sobre habilidades desatualizadas na barra de ação_.
+- **General tab settings now persist across sessions** (all sliders live in the same proven storage).
+- **New option — "Border width"** (0–60 px, default 12) for the border glow mode (0 = old look).
+- **All 6 TOCs declare Version 1.8.0** (dynamic About tab).
+- **Bilingual**: ptBR / English — addon reads your client locale automatically.
 
 ### Modules
 
@@ -88,11 +94,17 @@ interrupção, defensivo, utilidade).
 
 Ele **não aperta a tecla por você** — apenas acende o botão. Quem joga é você.
 
-### Novidades na 1.7.0
+### Novidades na 1.8.0
 
-- **As preferências da aba Geral agora persistem entre sessões.** Os sliders de Tamanho/Brilho do Flash passaram para a mesma coleção comprovadamente persistente dos demais ajustes — nada mais some no `/reload` ou no relog.
-- **Nova opção — "Largura da moldura"** (aba Geral): no modo **brilho de contorno**, aumente a largura da moldura em pixels (0–60, padrão 12; 0 = visual antigo).
-- **As 6 TOCs declaram a Versão 1.7.0.** Antes disso: suporte bilíngue completo, buffs sugeridos corretamente após o cast, Pisada de Guerra Tauren como interrupção de último recurso.
+- **Shaman — defesa em camadas para os imbues das armas.**
+  Após pressionar o botão do imbue (Labaredas/Windfury/Lightning Shield) o módulo registra uma crença longa (≥10 min), então o addon nunca mais mostra "ainda falta imbue" para sempre — independente das segredos de aura do cliente.
+- **Novo — avisos de rank desatualizado na barra (chat).**
+  No login, para cada habilidade na barra com rank menor do que o seu spellbook o addon imprime um aviso localizado com os dois ranks. Desligue a qualquer momento na aba **Geral**.
+- **Aba Geral — novo checkbox** (pré-marcado): _Avisar sobre habilidades desatualizadas na barra de ação_ / _Warn about outdated abilities on the action bar_.
+- **Preferências da aba Geral agora persistem entre sessões** (todos os sliders na mesma coleção).
+- **Nova opção — "Largura da moldura"** (0–60 px, padrão 12) para o modo de brilho de contorno (0 = visual antigo).
+- **As 6 TOCs declaram Versão 1.8.0** (aba Sobre lê dinamicamente).
+- **Bilíngue**: ptBR / English — o addon lê o locale do cliente automaticamente.
 
 ### Módulos
 
