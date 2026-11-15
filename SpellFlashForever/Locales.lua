@@ -113,6 +113,8 @@ local ptBR = {
     opt_disable_immune_tt = "Não registrar imunidades de criaturas contra tipos de magia.",
     opt_flash_size    = "Tamanho do Flash",
     opt_flash_bright  = "Brilho / Opacidade do Flash",
+    opt_flash_border_width = "Largura da moldura",
+    opt_flash_border_width_tt = "Apenas no modo de brilho de contorno: largura extra da moldura em pixels (0 = rente ao botão).",
     opt_minimap       = "Mostrar botão no minimapa",
     opt_minimap_tt    = "Exibe um botão no minimapa que abre/fecha este menu. Arraste-o para reposicionar. Use /sfminimap para igualmente esconder/mostrar.",
     opt_keybutton     = "Mostrar botão com a tecla da habilidade",
@@ -515,6 +517,8 @@ do
     enUS.opt_disable_immune_tt = "Do not register creature immunities against magic types."
     enUS.opt_flash_size    = "Flash Size"
     enUS.opt_flash_bright  = "Flash Brightness / Opacity"
+    enUS.opt_flash_border_width = "Border width"
+    enUS.opt_flash_border_width_tt = "Border glow mode only: extra width of the frame in pixels (0 = flush with the button)."
     enUS.opt_minimap       = "Show minimap button"
     enUS.opt_minimap_tt    = "Shows a minimap button that opens/closes this menu. Drag it to reposition. Use /sfminimap to hide/show it too."
     enUS.opt_keybutton     = "Show button with the ability key"

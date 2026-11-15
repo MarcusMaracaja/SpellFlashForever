@@ -40,6 +40,7 @@ local RACE = select(2, UnitRace("player")):upper():gsub("[^A-Z]", ""):gsub("^SCO
 -- Constantes
 local DEFAULT_FLASH_SIZE_PERCENT = 240
 local DEFAULT_FLASH_BRIGHTNESS_PERCENT = 100
+local DEFAULT_FLASH_BORDER_WIDTH = 12 -- px; 0 = comportamento antigo (moldura rente ao botão)
 
 local FLASH_SIZE_PERCENT = DEFAULT_FLASH_SIZE_PERCENT
 local FLASH_BRIGHTNESS_PERCENT = DEFAULT_FLASH_BRIGHTNESS_PERCENT
@@ -187,8 +188,24 @@ local function CheckVariables()
     if not db.SERVER[server].Immune[CLASS] then db.SERVER[server].Immune[CLASS] = {} end
     if not db.SERVER[server].ImmuneIgnore then db.SERVER[server].ImmuneIgnore = {} end
 
-    FLASH_SIZE_PERCENT = db.SERVER[server].REALM[realm].PLAYER[player].flash_size_percent or DEFAULT_FLASH_SIZE_PERCENT
-    FLASH_BRIGHTNESS_PERCENT = db.SERVER[server].REALM[realm].PLAYER[player].flash_brightness_percent or DEFAULT_FLASH_BRIGHTNESS_PERCENT
+    -- Migração única para a coleção unificada `handle`: o caminho antigo
+    -- SERVER.REALM.PLAYER.flash_* podia não persistir entre realms/sessões.
+    local handle = db.handle
+    if handle then
+        if handle.flash_size_percent == nil then
+            handle.flash_size_percent = db.SERVER[server].REALM[realm].PLAYER[player].flash_size_percent
+        end
+        if handle.flash_brightness_percent == nil then
+            handle.flash_brightness_percent = db.SERVER[server].REALM[realm].PLAYER[player].flash_brightness_percent
+        end
+        if handle.flash_border_width == nil then
+            local legacy = db.SERVER[server].REALM[realm].PLAYER[player].flash_border_width
+            handle.flash_border_width = legacy or DEFAULT_FLASH_BORDER_WIDTH
+        end
+    end
+
+    FLASH_SIZE_PERCENT = (handle and handle.flash_size_percent) or DEFAULT_FLASH_SIZE_PERCENT
+    FLASH_BRIGHTNESS_PERCENT = (handle and handle.flash_brightness_percent) or DEFAULT_FLASH_BRIGHTNESS_PERCENT
 end
 
 -- ---------------------------------------------------------------------------
@@ -256,6 +273,9 @@ local function FlashFrameOnUpdate(self, elapsed)
             else
                 local baseW = self.targetWidth or 36
                 local baseH = self.targetHeight or 36
+                local bw = self.BorderAdd or 0
+                baseW = baseW + 2 * bw
+                baseH = baseH + 2 * bw
                 local scale = self.FixedSize and self.FlashSize or (self.modifier * self.FlashSize)
                 self.FlashTexture:SetHeight(math.max(8, baseH * scale))
                 self.FlashTexture:SetWidth(math.max(8, baseW * scale))
@@ -285,7 +305,7 @@ local function GetFlashOverlay(frame, mode)
         ff.FlashTexture = ff:CreateTexture(nil, "OVERLAY")
         if mode == "border" then
             ff.FlashTexture:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
-            ff.FlashTexture:SetAllPoints(ff)
+            ff.FlashTexture:SetPoint("CENTER", ff, "CENTER") -- centralizada: a largura extra expande para os 4 lados
         else
             ff.FlashTexture:SetTexture("Interface\\Cooldown\\star4")
             ff.FlashTexture:SetPoint("CENTER", ff, "CENTER")
@@ -325,8 +345,10 @@ local function FlashFrame(frame, color, size, brightness, blink, texture, fixedS
     ff.FlashModifier = 1
     ff.modifier = 1
     ff.FixedSize = fixedSize or false
-    -- No modo borda o tamanho é sempre o do botão, independente do percentual
+    -- No modo borda o tamanho é sempre o do botão, independente do percentual;
+    -- a "largura da moldura" (handle.flash_border_width) expande a textura para fora.
     ff.FlashSize = (mode == "border") and 1 or ((size or FLASH_SIZE_PERCENT or 240) / 100)
+    ff.BorderAdd = (mode == "border") and (cfg.flash_border_width or DEFAULT_FLASH_BORDER_WIDTH) or 0
     ff.FixedBrightness = fixedBrightness or false
     ff.Solid = not not cfg.flash_solid
     ff.FlashBrightness = (brightness or FLASH_BRIGHTNESS_PERCENT or 100) / 100
@@ -336,8 +358,9 @@ local function FlashFrame(frame, color, size, brightness, blink, texture, fixedS
     if w <= 0 then w = 36 end
     if h <= 0 then h = 36 end
 
-    ff.FlashTexture:SetHeight(h * ff.FlashSize)
-    ff.FlashTexture:SetWidth(w * ff.FlashSize)
+    local bwInit = ff.BorderAdd or 0
+    ff.FlashTexture:SetHeight(math.max(8, (h + 2 * bwInit) * ff.FlashSize))
+    ff.FlashTexture:SetWidth(math.max(8, (w + 2 * bwInit) * ff.FlashSize))
     ff.FlashTexture:SetAlpha(math.min(1, 1 * ff.FlashBrightness))
     if type(color) == "table" then
         ff.FlashTexture:SetVertexColor(color.r or 1, color.g or 1, color.b or 1)
@@ -1005,33 +1028,35 @@ end
 -- ---------------------------------------------------------------------------
 
 function s.GetFlashSize()
-    return FLASH_SIZE_PERCENT
+    local handle = GetHandle()
+    return (handle and handle.flash_size_percent) or FLASH_SIZE_PERCENT or DEFAULT_FLASH_SIZE_PERCENT
 end
 
 function s.SetFlashSize(val)
     FLASH_SIZE_PERCENT = tonumber(val) or DEFAULT_FLASH_SIZE_PERCENT
-    local player = UnitName("player")
-    local realm = GetRealmName()
-    local server = C_CVar and C_CVar.GetCVar("realmList") or (GetCVar and GetCVar("realmList")) or ""
-    server = server:lower()
-    if db.SERVER and db.SERVER[server] and db.SERVER[server].REALM and db.SERVER[server].REALM[realm] and db.SERVER[server].REALM[realm].PLAYER and db.SERVER[server].REALM[realm].PLAYER[player] then
-        db.SERVER[server].REALM[realm].PLAYER[player].flash_size_percent = FLASH_SIZE_PERCENT
-    end
+    local h = GetHandle() or {}
+    h.flash_size_percent = FLASH_SIZE_PERCENT
 end
 
 function s.GetFlashBrightness()
-    return FLASH_BRIGHTNESS_PERCENT
+    local handle = GetHandle()
+    return (handle and handle.flash_brightness_percent) or FLASH_BRIGHTNESS_PERCENT or DEFAULT_FLASH_BRIGHTNESS_PERCENT
 end
 
 function s.SetFlashBrightness(val)
     FLASH_BRIGHTNESS_PERCENT = tonumber(val) or DEFAULT_FLASH_BRIGHTNESS_PERCENT
-    local player = UnitName("player")
-    local realm = GetRealmName()
-    local server = C_CVar and C_CVar.GetCVar("realmList") or (GetCVar and GetCVar("realmList")) or ""
-    server = server:lower()
-    if db.SERVER and db.SERVER[server] and db.SERVER[server].REALM and db.SERVER[server].REALM[realm] and db.SERVER[server].REALM[realm].PLAYER and db.SERVER[server].REALM[realm].PLAYER[player] then
-        db.SERVER[server].REALM[realm].PLAYER[player].flash_brightness_percent = FLASH_BRIGHTNESS_PERCENT
-    end
+    local h = GetHandle() or {}
+    h.flash_brightness_percent = FLASH_BRIGHTNESS_PERCENT
+end
+
+function s.GetFlashBorderWidth()
+    local handle = GetHandle()
+    return (handle and handle.flash_border_width) or DEFAULT_FLASH_BORDER_WIDTH
+end
+
+function s.SetFlashBorderWidth(val)
+    local h = GetHandle() or {}
+    h.flash_border_width = math.max(0, tonumber(val) or DEFAULT_FLASH_BORDER_WIDTH)
 end
 
 function s.GetModuleConfig(moduleName, config)

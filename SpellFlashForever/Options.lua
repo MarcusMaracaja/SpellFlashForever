@@ -68,7 +68,7 @@ local function CreateCheck(parent, name, label, tooltip, x, y, getFunc, setFunc)
     return cb
 end
 
-local function CreateSlider(parent, name, label, minVal, maxVal, step, x, y, getFunc, setFunc, formatFunc)
+local function CreateSlider(parent, name, label, minVal, maxVal, step, x, y, getFunc, setFunc, formatFunc, tooltip)
     local slider = CreateFrame("Slider", name, parent, "OptionsSliderTemplate")
     slider:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
     slider:SetWidth(260)
@@ -102,6 +102,16 @@ local function CreateSlider(parent, name, label, minVal, maxVal, step, x, y, get
         setFunc(rounded)
         UpdateText(rounded)
     end)
+
+    if tooltip then
+        slider:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(label, 1, 1, 1)
+            GameTooltip:AddLine(tooltip, 0.8, 0.8, 0.8, true)
+            GameTooltip:Show()
+        end)
+        slider:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    end
 
     return slider
 end
@@ -231,6 +241,15 @@ local function BuildGeneralTab(parent)
         function(val) return val .. "%" end
     )
     y = y - 40
+
+    -- (também para o modo borda)
+    CreateSlider(parent, "SFBF_GUI_Slider_BorderWidth", L.opt_flash_border_width, 0, 60, 1, 20, y,
+        function() return s.GetFlashBorderWidth and s.GetFlashBorderWidth() or 12 end,
+        function(val) if s.SetFlashBorderWidth then s.SetFlashBorderWidth(val) end end,
+        function(val) return val .. "px" end,
+        L.opt_flash_border_width_tt
+    )
+    y = y - 48
 
     -- Botão no minimapa (mostra/esconde)
     CreateCheck(parent, "SFBF_GUI_MinimapButton", L.opt_minimap,
