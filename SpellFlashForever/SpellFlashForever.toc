@@ -2,7 +2,7 @@
 ## Title: SpellFlash Forever
 ## Notes: Rotation assistant for WoW Forever: flashes the recommended ability on your action bars. | Assistente de rotação para o WoW Forever: faz piscar a habilidade recomendada na barra de ação.
 ## Author: Marcus (SpellFlash original: Exalter, BigRedBrent, SF Community)
-## Version: 1.7.0
+## Version: 1.8.0
 ## X-Credits: Criado por Marcus. Desenvolvido com Inkling 2 Small Free (OpenCode) como parceiro de IA.
 ## SavedVariables: SpellFlashForeverDB
 ## SavedVariablesPerCharacter: SpellFlashForeverCharDB
