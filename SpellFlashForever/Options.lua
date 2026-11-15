@@ -6,7 +6,7 @@ local s = _G[addonName]
 if not s then return end
 local L = s.L
 local ADDON_VERSION = (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(addonName, "Version"))
-    or (GetAddOnMetadata and GetAddOnMetadata(addonName, "Version")) or "1.6.0"
+    or (GetAddOnMetadata and GetAddOnMetadata(addonName, "Version")) or "1.8.0"
 
 local registeredTabs = {}
 local tabButtons = {}
