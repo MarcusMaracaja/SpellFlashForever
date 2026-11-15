@@ -18,10 +18,11 @@ now flash**, with colors per function (damage, AoE, interrupt, defensive, utilit
 It does **not** press the key for you — it just flashes the button. You stay in
 control.
 
-### New in 1.6.0
+### What's new in 1.7.0
 
-The addon is now **bilingual**: it reads your client locale automatically.
-ptBR clients see Portuguese; everyone else sees English. No configuration needed.
+- **General tab settings now persist across sessions.** The flash Size/Brightness sliders were moved into the same proven storage used by every other option, so your setup survives `/reload` and relogs.
+- **New option — "Border width"** (General tab): in the **border glow** mode, increase the frame width in pixels (0–60, default 12; 0 = old look).
+- **All 6 TOCs declare Version 1.7.0.** Previously: full bilingual support, all buffs suggested correctly after cast, Tauren's War Stomp as last-resort interrupt.
 
 ### Modules
 
@@ -87,10 +88,11 @@ interrupção, defensivo, utilidade).
 
 Ele **não aperta a tecla por você** — apenas acende o botão. Quem joga é você.
 
-### Novidades na 1.6.0
+### Novidades na 1.7.0
 
-O addon agora é **bilíngue**: detecta o idioma do cliente automaticamente.
-Clientes ptBR veem português; todos os outros veem inglês. Sem configuração.
+- **As preferências da aba Geral agora persistem entre sessões.** Os sliders de Tamanho/Brilho do Flash passaram para a mesma coleção comprovadamente persistente dos demais ajustes — nada mais some no `/reload` ou no relog.
+- **Nova opção — "Largura da moldura"** (aba Geral): no modo **brilho de contorno**, aumente a largura da moldura em pixels (0–60, padrão 12; 0 = visual antigo).
+- **As 6 TOCs declaram a Versão 1.7.0.** Antes disso: suporte bilíngue completo, buffs sugeridos corretamente após o cast, Pisada de Guerra Tauren como interrupção de último recurso.
 
 ### Módulos
 
