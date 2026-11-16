@@ -27,6 +27,8 @@ control.
 - **General tab — new checkbox** (pre-checked): _Warn about outdated abilities on the action bar_ / _Avisar sobre habilidades desatualizadas na barra de ação_.
 - **General tab settings now persist across sessions** (all sliders live in the same proven storage).
 - **New option — "Border width"** (0–60 px, default 12) for the border glow mode (0 = old look).
+- **The configuration window now has an obvious red ✕ close button** in the top-right corner (drawn in code, so it is always visible). You can still close the window with `ESC`, with `/sf` again, or by clicking the red X.
+- **The General tab (`/sf` → General) now has a "Save Settings" button** next to the "Test Flash" button. It forces an extra write of every configured value to the character's saved variables and confirms in chat. (Your settings are normally persisted on logout/`/reload`; this button gives you immediate, explicit feedback.)
 - **All 6 TOCs declare Version 1.8.0** (dynamic About tab).
 - **Bilingual**: ptBR / English — addon reads your client locale automatically.
 
@@ -103,6 +105,8 @@ Ele **não aperta a tecla por você** — apenas acende o botão. Quem joga é v
 - **Aba Geral — novo checkbox** (pré-marcado): _Avisar sobre habilidades desatualizadas na barra de ação_ / _Warn about outdated abilities on the action bar_.
 - **Preferências da aba Geral agora persistem entre sessões** (todos os sliders na mesma coleção).
 - **Nova opção — "Largura da moldura"** (0–60 px, padrão 12) para o modo de brilho de contorno (0 = visual antigo).
+- **A janela de configuração agora tem um botão vermelho ✕ de fechar** no canto superior direito (desenhado por código, então está sempre visível). Você ainda pode fechar com `ESC`, com `/sf` de novo ou clicando no X vermelho.
+- **A aba Geral (`/sf` → Geral) agora tem um botão "Salvar Configurações"** ao lado do botão "Testar Flash". Ele força uma escrita extra de todos os valores configurados nas variáveis salvas do personagem e confirma no chat. (As configurações normalmente são salvas ao sair/`/reload`; este botão dá retorno imediato e explícito.)
 - **As 6 TOCs declaram Versão 1.8.0** (aba Sobre lê dinamicamente).
 - **Bilíngue**: ptBR / English — o addon lê o locale do cliente automaticamente.
 

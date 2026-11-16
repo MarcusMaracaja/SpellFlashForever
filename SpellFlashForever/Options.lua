@@ -317,6 +317,23 @@ local function BuildGeneralTab(parent)
             DEFAULT_CHAT_FRAME:AddMessage(L.opt_test_fail)
         end
     end)
+
+    -- Botão Salvar Configurações (reforça a escrita no banco e confirma no chat)
+    local saveBtn = CreateFrame("Button", "SFBF_GUI_SaveButton", parent, "UIPanelButtonTemplate")
+    saveBtn:SetPoint("TOPLEFT", testBtn, "TOPRIGHT", 12, 0)
+    saveBtn:SetSize(180, 24)
+    saveBtn:SetText(L.opt_save_button)
+    saveBtn:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(L.opt_save_button_tt or L.opt_save_button)
+        GameTooltip:Show()
+    end)
+    saveBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    saveBtn:SetScript("OnClick", function()
+        if s.SaveAllSettings and s.SaveAllSettings() then
+            DEFAULT_CHAT_FRAME:AddMessage(L.opt_saved)
+        end
+    end)
 end
 
 -- Conteúdo da Aba Sobre
@@ -425,9 +442,22 @@ local function CreateMainGUI()
     titleText:SetPoint("TOP", titleBg, "TOP", 0, -14)
     titleText:SetText("|cff33ff99SpellFlash Forever|r")
 
-    -- Botão Fechar [X]
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+    -- Botão Fechar [X] — desenhado no código (sempre visível, destacado em vermelho)
+    local closeBtn = CreateFrame("Button", "SFBF_GUI_CloseButton", f)
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
+    closeBtn:SetSize(24, 24)
+    local closeBg = closeBtn:CreateTexture(nil, "BACKGROUND")
+    closeBg:SetAllPoints()
+    closeBg:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+    closeBg:SetVertexColor(0.55, 0.08, 0.08, 0.9)
+    local closeX = closeBtn:CreateFontString(nil, "OVERLAY")
+    closeX:SetFont("Fonts\\FRIZQT__.TTF", 16, "OUTLINE")
+    closeX:SetPoint("CENTER", closeBtn, "CENTER", 0, 0)
+    closeX:SetText("X")
+    closeX:SetTextColor(1, 1, 1)
+    closeBtn:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+    closeBtn:SetScript("OnEnter", function() closeX:SetTextColor(1, 0.85, 0.2) end)
+    closeBtn:SetScript("OnLeave", function() closeX:SetTextColor(1, 1, 1) end)
     closeBtn:SetScript("OnClick", function() f:Hide() end)
 
     -- Fecha com a tecla ESC

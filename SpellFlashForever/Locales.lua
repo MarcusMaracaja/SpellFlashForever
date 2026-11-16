@@ -124,6 +124,9 @@ local ptBR = {
     opt_keybutton_lock = "Travar o botão de tecla (não arrasta)",
     opt_keybutton_lock_tt = "Impede que o botão de tecla seja arrastado por engano. Use junto com 'Mostrar botão com a tecla da habilidade'.",
     opt_test_button   = "Testar Flash",
+    opt_save_button   = "Salvar Configurações",
+    opt_save_button_tt = "Grava agora todas as configurações nas variáveis salvas (SavedVariables) do personagem.",
+    opt_saved         = "|cff33ff99SpellFlash Forever:|r Configurações salvas com sucesso.",
     opt_test_msg      = "|cff33ff99SpellFlash Forever:|r Testando flash no Botão 1.",
     opt_test_fail     = "|cff33ff99SpellFlash Forever:|r Botão 1 não encontrado para teste.",
 
@@ -530,6 +533,9 @@ do
     enUS.opt_keybutton_lock = "Lock the key button (no dragging)"
     enUS.opt_keybutton_lock_tt = "Prevents the key button from being dragged by accident. Use together with 'Show button with the ability key'."
     enUS.opt_test_button   = "Test Flash"
+    enUS.opt_save_button   = "Save Settings"
+    enUS.opt_save_button_tt = "Immediately writes all configuration to the character's saved variables (SavedVariables)."
+    enUS.opt_saved         = "|cff33ff99SpellFlash Forever:|r Settings saved successfully."
     enUS.opt_test_msg      = "|cff33ff99SpellFlash Forever:|r Testing flash on Button 1."
     enUS.opt_test_fail     = "|cff33ff99SpellFlash Forever:|r Button 1 not found for testing."
 

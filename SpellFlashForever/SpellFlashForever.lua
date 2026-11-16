@@ -1084,6 +1084,18 @@ function s.ClearAllModuleConfigs(moduleName)
     end
 end
 
+-- Força uma leitura/escrita dos valores em uso e devolve true.
+-- (WoW normalmente persiste SavedVariables no logout; este callback é um
+-- caminho explícito para o botão "Salvar Configurações" na GUI.)
+function s.SaveAllSettings()
+    local h = db and db.handle or {}
+    -- Reafirmar setters para garantir que tudo esteja escrito no handle
+    if s.SetFlashSize then s.SetFlashSize(s.GetFlashSize and s.GetFlashSize() or 240) end
+    if s.SetFlashBrightness then s.SetFlashBrightness(s.GetFlashBrightness and s.GetFlashBrightness() or 100) end
+    if s.SetFlashBorderWidth then s.SetFlashBorderWidth(s.GetFlashBorderWidth and s.GetFlashBorderWidth() or 12) end
+    return true
+end
+
 function s.OpenOptions()
     if s.ToggleGUI then
         s.ToggleGUI()
